@@ -394,6 +394,25 @@
     }
     function cleanupWrongbookOnDelete(id){if(wrongbookData[id]){delete wrongbookData[id];saveWrongbook()}}
 
+    /* 自动修复常见 JSON 格式问题：原始换行替换为 \n */
+    function autoRepairJSON(raw){
+        let result='';let inString=false;let escNext=false;
+        for(let i=0;i<raw.length;i++){
+            const ch=raw[i];
+            if(escNext){result+=ch;escNext=false;continue}
+            if(ch==='\\'&&inString){result+=ch;escNext=true;continue}
+            if(ch==='"'){inString=!inString;result+=ch;continue}
+            if(inString){
+                if(ch==='\r'){if(i+1<raw.length&&raw[i+1]==='\n'){result+='\\n';i++}else{result+='\\r'}}
+                else if(ch==='\n'){result+='\\n'}
+                else if(ch==='\t'){result+='\\t'}
+                else if(ch.charCodeAt(0)<0x20){result+='\\u'+ch.charCodeAt(0).toString(16).padStart(4,'0')}
+                else{result+=ch}
+            }else{result+=ch}
+        }
+        return result;
+    }
+
     /* ========== 导入/导出 ========== */
     function exportKnowledge(){
         if(!knowledgeList.length){alert('没有可导出的知识点');return}
@@ -453,7 +472,58 @@
                 saveKnowledge();renderCards();
                 alert(`✅ 成功导入 ${valid.length} 条知识点！当前题库共 ${knowledgeList.length} 条。`);
             }catch(err){
-                alert('❌ 文件解析失败，请检查 JSON 格式是否正确。\n错误：'+err.message);
+                /* 增强错误提示：显示具体位置和上下文 */
+                const rawText=e.target.result;
+                let errMsg='❌ JSON 格式错误：'+err.message;
+                /* 提取错误位置 */
+                const posMatch=err.message.match(/position\s*(\d+)/i)||err.message.match(/line\s*(\d+).*column\s*(\d+)/i);
+                if(posMatch){
+                    if(posMatch.length===2){
+                        const pos=parseInt(posMatch[1]);
+                        const lines=rawText.substring(0,pos).split('\n');
+                        const lineNum=lines.length;
+                        const colNum=lines[lines.length-1].length+1;
+                        errMsg+=`\n\n📍 位置：第 ${lineNum} 行，第 ${colNum} 列`;
+                        /* 显示出错行内容 */
+                        const allLines=rawText.split('\n');
+                        if(lineNum<=allLines.length){
+                            errMsg+=`\n📝 第 ${lineNum} 行内容：\n   ${allLines[lineNum-1].substring(0,100)}`;
+                        }
+                    }else if(posMatch.length===3){
+                        errMsg+=`\n\n📍 位置：第 ${posMatch[1]} 行，第 ${posMatch[2]} 列`;
+                    }
+                }
+                errMsg+='\n\n💡 常见原因：\n• 字符串中含未转义的换行符（应用 \\n 替代）\n• 代码中的双引号未转义（应用 \\" 替代）\n• 末尾多了逗号\n\n🔧 可用在线工具验证：jsonlint.com';
+                /* 尝试自动修复：替换字符串内的原始换行 */
+                errMsg+='\n\n是否尝试自动修复？(确定=尝试修复，取消=放弃)';
+                if(confirm(errMsg)){
+                    try{
+                        const repaired=autoRepairJSON(rawText);
+                        const data=JSON.parse(repaired);
+                        const items=Array.isArray(data)?data:[data];
+                        const valid=[];const invalid=[];
+                        items.forEach((item,idx)=>{
+                            if(item.title&&item.explanation){
+                                const diff=['beginner','intermediate','advanced'].includes(item.difficulty)?item.difficulty:'intermediate';
+                                valid.push({id:generateId(),title:String(item.title).trim(),explanation:String(item.explanation).trim(),code:item.code?String(item.code).trim():'',extension:item.extension?String(item.extension).trim():'',difficulty:diff,tags:Array.isArray(item.tags)?item.tags.map(t=>String(t).trim()).filter(Boolean):[]});
+                            }else{invalid.push(idx+1);}
+                        });
+                        if(!valid.length){alert('自动修复失败：未找到有效数据。');return}
+                        let msg=`自动修复成功！即将导入 ${valid.length} 条知识点`;
+                        if(invalid.length)msg+=`（跳过 ${invalid.length} 条无效：第 ${invalid.join(',')} 条）`;
+                        msg+='\n\n• 确定 = 追加  •  取消 = 替换';
+                        if(confirm(msg)){
+                            knowledgeList=[...knowledgeList,...valid];
+                        }else{
+                            if(!confirm('⚠️ 替换将清除现有题库（'+knowledgeList.length+'条），确定？'))return;
+                            knowledgeList=valid;
+                        }
+                        saveKnowledge();renderCards();
+                        alert(`✅ 导入成功！共 ${valid.length} 条，题库现有 ${knowledgeList.length} 条。`);
+                    }catch(e2){
+                        alert('自动修复也失败了：'+e2.message+'\n\n请手动修复 JSON 文件后重试。');
+                    }
+                }
             }
         };
         reader.readAsText(file);
