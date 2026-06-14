@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C# 复习</title>
+    <style>
+        :root{--bg-primary:#f5f7fa;--bg-secondary:#fff;--text-primary:#2c3e50;--text-secondary:#5a6c7d;--accent:#3498db;--accent-hover:#2980b9;--success:#27ae60;--warning:#f39c12;--danger:#e74c3c;--border:#e0e6ed;--shadow:rgba(0,0,0,0.1);--code-bg:#282c34;--tag-bg:#3498db20;--difficulty-beginner:#27ae60;--difficulty-intermediate:#f39c12;--difficulty-advanced:#e74c3c}
+        [data-theme="dark"]{--bg-primary:#1a1a2e;--bg-secondary:#16213e;--text-primary:#eaeaea;--text-secondary:#a0a0a0;--accent:#4a9eff;--border:#2c3e50;--shadow:rgba(0,0,0,0.3);--tag-bg:#4a9eff30}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg-primary);color:var(--text-primary);line-height:1.6;min-height:100vh;transition:.3s}
+        .navbar{position:fixed;top:0;left:0;right:0;background:var(--bg-secondary);padding:12px 20px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 10px var(--shadow);z-index:100;border-bottom:1px solid var(--border)}
+        .logo{font-size:1.3rem;font-weight:700;color:var(--accent);display:flex;align-items:center;gap:8px}
+        .nav-buttons{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+        .nav-btn{background:var(--accent);color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:.9rem;font-weight:500;transition:.2s}
+        .nav-btn:hover{background:var(--accent-hover);transform:translateY(-1px)}
+        .nav-btn:active{transform:scale(.95)}
+        .nav-btn.secondary{background:var(--bg-primary);color:var(--text-primary);border:1px solid var(--border)}
+        .nav-btn.danger{background:var(--danger)}
+        .mode-switch{display:flex;background:var(--bg-primary);border-radius:8px;padding:4px;gap:4px}
+        .mode-btn{padding:8px 16px;border:none;border-radius:6px;cursor:pointer;font-size:.9rem;font-weight:500;transition:.2s;background:transparent;color:var(--text-secondary)}
+        .mode-btn:hover{background:var(--bg-secondary)}
+        .mode-btn.active{background:var(--accent);color:#fff}
+        .container{max-width:1200px;margin:0 auto;padding:80px 20px 40px}
+        .filters{background:var(--bg-secondary);padding:20px;border-radius:12px;margin-bottom:24px;box-shadow:0 2px 10px var(--shadow)}
+        .search-box{width:100%;padding:12px 16px;border:2px solid var(--border);border-radius:8px;font-size:1rem;background:var(--bg-primary);color:var(--text-primary);margin-bottom:16px;transition:border-color .2s}
+        .search-box:focus{outline:none;border-color:var(--accent)}
+        .filter-buttons{display:flex;flex-wrap:wrap;gap:8px}
+        .filter-btn{padding:8px 16px;border:2px solid var(--border);border-radius:20px;background:var(--bg-primary);color:var(--text-secondary);cursor:pointer;font-size:.85rem;font-weight:500;transition:.2s}
+        .filter-btn:hover{border-color:var(--accent);color:var(--accent)}
+        .filter-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+        .cards-grid{display:grid;grid-template-columns:1fr;gap:20px}
+        @media(min-width:768px){.cards-grid{grid-template-columns:repeat(2,1fr)}}
+        .card{background:var(--bg-secondary);border-radius:12px;padding:20px;box-shadow:0 2px 10px var(--shadow);border:1px solid var(--border);cursor:pointer;transition:.3s}
+        .card:hover{transform:translateY(-2px);box-shadow:0 4px 20px var(--shadow)}
+        .card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+        .card-title{font-size:1.1rem;font-weight:600;flex:1}
+        .card-difficulty{padding:4px 10px;border-radius:12px;font-size:.75rem;font-weight:600;color:#fff;margin-left:12px}
+        .difficulty-beginner{background:var(--difficulty-beginner)}
+        .difficulty-intermediate{background:var(--difficulty-intermediate)}
+        .difficulty-advanced{background:var(--difficulty-advanced)}
+        .card-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+        .tag{background:var(--tag-bg);color:var(--accent);padding:4px 10px;border-radius:12px;font-size:.8rem}
+        .card-preview{color:var(--text-secondary);font-size:.95rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+        .card.expanded .card-preview{display:none}
+        .card-details{display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)}
+        .card.expanded .card-details{display:block;animation:fadeIn .3s}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+        .detail-section{margin-bottom:16px}
+        .detail-label{font-weight:600;color:var(--accent);margin-bottom:8px;font-size:.9rem}
+        .detail-content{color:var(--text-secondary);font-size:.95rem}
+        .code-block{background:var(--code-bg);color:#abb2bf;padding:16px;border-radius:8px;font-family:'Consolas',monospace;font-size:.85rem;overflow-x:auto;white-space:pre-wrap;word-break:break-all}
+        .card-actions{display:flex;gap:8px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)}
+        .card-btn{flex:1;padding:10px;border:none;border-radius:8px;cursor:pointer;font-size:.9rem;font-weight:500;transition:.2s}
+        .card-btn:active{transform:scale(.95)}
+        .card-btn.edit{background:var(--accent);color:#fff}
+        .card-btn.delete{background:var(--danger);color:#fff}
+        .quiz-container{max-width:700px;margin:0 auto}
+        .quiz-setup{background:var(--bg-secondary);padding:30px;border-radius:16px;box-shadow:0 4px 20px var(--shadow);text-align:center}
+        .quiz-setup h2{font-size:1.5rem;margin-bottom:10px;color:var(--accent)}
+        .quiz-setup p{color:var(--text-secondary);margin-bottom:24px}
+        .quiz-options{display:flex;flex-direction:column;gap:16px;margin-bottom:24px}
+        .quiz-option{display:flex;align-items:center;gap:12px}
+        .quiz-option label{font-weight:500;min-width:100px}
+        .quiz-option input[type="number"]{flex:1;padding:10px 14px;border:2px solid var(--border);border-radius:8px;font-size:1rem;background:var(--bg-primary);color:var(--text-primary)}
+        .quiz-type-selector{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:24px}
+        .quiz-type-btn{padding:10px 20px;border:2px solid var(--border);border-radius:20px;background:var(--bg-primary);color:var(--text-secondary);cursor:pointer;font-size:.95rem;font-weight:500;transition:.2s}
+        .quiz-type-btn:hover{border-color:var(--accent);color:var(--accent)}
+        .quiz-type-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+        .start-quiz-btn{background:linear-gradient(135deg,var(--accent),var(--accent-hover));color:#fff;border:none;padding:14px 40px;border-radius:25px;font-size:1.1rem;font-weight:600;cursor:pointer;transition:.3s;box-shadow:0 4px 15px rgba(52,152,219,.3)}
+        .start-quiz-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(52,152,219,.4)}
+        .quiz-progress{background:var(--bg-secondary);padding:20px;border-radius:12px;margin-bottom:20px;box-shadow:0 2px 10px var(--shadow)}
+        .progress-bar-container{background:var(--bg-primary);border-radius:10px;height:10px;overflow:hidden;margin-bottom:12px}
+        .progress-bar{background:linear-gradient(90deg,var(--accent),var(--success));height:100%;border-radius:10px;transition:width .3s}
+        .progress-text{display:flex;justify-content:space-between;font-size:.9rem;color:var(--text-secondary);flex-wrap:wrap;gap:8px}
+        .progress-text span{display:flex;align-items:center;gap:4px}
+        .quiz-card{background:var(--bg-secondary);border-radius:16px;padding:30px;box-shadow:0 4px 20px var(--shadow);margin-bottom:20px}
+        .question-type{display:inline-block;padding:6px 14px;border-radius:20px;font-size:.85rem;font-weight:600;margin-bottom:16px}
+        .question-type.choice{background:var(--accent);color:#fff}
+        .question-type.judge{background:var(--warning);color:#fff}
+        .question-type.fill{background:var(--success);color:#fff}
+        .question-text{font-size:1.2rem;font-weight:500;margin-bottom:24px;line-height:1.6;white-space:pre-wrap}
+        .options-list{display:flex;flex-direction:column;gap:12px}
+        .option-item{padding:16px 20px;border:2px solid var(--border);border-radius:12px;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:12px;background:var(--bg-primary)}
+        .option-item:hover:not(.disabled){border-color:var(--accent);background:var(--bg-secondary)}
+        .option-item.correct{border-color:var(--success);background:rgba(39,174,96,.1)}
+        .option-item.incorrect{border-color:var(--danger);background:rgba(231,76,60,.1)}
+        .option-item.disabled{cursor:default;opacity:.7}
+        .option-letter{width:32px;height:32px;border-radius:50%;background:var(--bg-secondary);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:.9rem;flex-shrink:0}
+        .option-item.correct .option-letter{background:var(--success);color:#fff}
+        .option-item.incorrect .option-letter{background:var(--danger);color:#fff}
+        .option-text{flex:1;word-break:break-word}
+        .answer-feedback{background:var(--bg-secondary);border-radius:12px;padding:20px;margin-top:20px;border-left:4px solid;animation:slideIn .3s}
+        @keyframes slideIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+        .answer-feedback.correct{border-color:var(--success)}
+        .answer-feedback.incorrect{border-color:var(--danger)}
+        .feedback-header{display:flex;align-items:center;gap:8px;margin-bottom:12px;font-weight:600;font-size:1.1rem}
+        .feedback-header.correct{color:var(--success)}
+        .feedback-header.incorrect{color:var(--danger)}
+        .analysis-card{background:var(--bg-primary);border-radius:8px;padding:16px;margin-top:16px}
+        .analysis-card h4{color:var(--accent);margin-bottom:8px;font-size:.95rem}
+        .analysis-card p{color:var(--text-secondary);font-size:.95rem;margin-bottom:8px}
+        .analysis-card pre{margin-top:8px}
+        .next-btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:1rem;font-weight:600;cursor:pointer;transition:.2s;margin-top:20px;background:var(--accent);color:#fff}
+        .next-btn:hover{background:var(--accent-hover)}
+        .quiz-result{background:var(--bg-secondary);border-radius:16px;padding:40px;box-shadow:0 4px 20px var(--shadow);text-align:center}
+        .result-icon{font-size:5rem;margin-bottom:20px}
+        .result-title{font-size:1.8rem;font-weight:700;margin-bottom:10px}
+        .result-subtitle{color:var(--text-secondary);margin-bottom:30px}
+        .score-display{background:var(--bg-primary);border-radius:16px;padding:30px;margin-bottom:20px}
+        .score-number{font-size:4rem;font-weight:700;color:var(--accent);line-height:1}
+        .score-label{color:var(--text-secondary);margin-top:8px}
+        .score-stats{display:flex;justify-content:center;gap:30px;margin-top:20px}
+        .score-stat{text-align:center}
+        .score-stat-value{font-size:1.5rem;font-weight:600}
+        .score-stat-label{font-size:.85rem;color:var(--text-secondary)}
+        .score-stat.correct .score-stat-value{color:var(--success)}
+        .score-stat.incorrect .score-stat-value{color:var(--danger)}
+        .high-frequency-warn{background:linear-gradient(135deg,rgba(231,76,60,.1),rgba(243,156,18,.1));border:2px solid var(--danger);border-radius:12px;padding:16px;margin-top:16px;text-align:left}
+        .high-frequency-warn h4{color:var(--danger);margin-bottom:8px;font-size:1rem;display:flex;align-items:center;gap:6px}
+        .high-frequency-warn p{color:var(--text-secondary);font-size:.9rem;margin-bottom:12px}
+        .high-freq-item{display:inline-flex;align-items:center;gap:6px;background:var(--bg-secondary);padding:6px 12px;border-radius:20px;margin:4px;font-size:.85rem;color:var(--danger);font-weight:500}
+        .high-freq-badge{background:var(--danger);color:#fff;padding:2px 8px;border-radius:10px;font-size:.75rem}
+        .wrong-questions{margin-top:20px;text-align:left}
+        .wrong-questions h3{margin-bottom:16px;color:var(--danger);font-size:1.2rem}
+        .wrong-question-item{background:var(--bg-primary);border-radius:12px;padding:16px;margin-bottom:12px;cursor:pointer;transition:.2s}
+        .wrong-question-item:hover{transform:translateX(4px)}
+        .wrong-question-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+        .wrong-question-title{font-weight:500}
+        .wrong-question-answer{font-size:.9rem;color:var(--text-secondary)}
+        .result-actions{display:flex;gap:12px;margin-top:30px;flex-wrap:wrap}
+        .result-btn{flex:1;min-width:120px;padding:14px;border:none;border-radius:12px;font-size:1rem;font-weight:600;cursor:pointer;transition:.2s}
+        .result-btn.primary{background:var(--accent);color:#fff}
+        .result-btn.secondary{background:var(--bg-primary);color:var(--text-primary);border:2px solid var(--border)}
+        .result-btn:hover{transform:translateY(-2px)}
+        .wrongbook-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+        .wrongbook-header h2{font-size:1.5rem;color:var(--accent);display:flex;align-items:center;gap:8px}
+        .wrongbook-stats{background:var(--bg-secondary);border-radius:12px;padding:16px;margin-bottom:24px;box-shadow:0 2px 10px var(--shadow);display:flex;justify-content:space-around;flex-wrap:wrap;gap:16px}
+        .wrongbook-stat{text-align:center}
+        .wrongbook-stat-value{font-size:2rem;font-weight:700;color:var(--danger)}
+        .wrongbook-stat-label{font-size:.85rem;color:var(--text-secondary)}
+        .wrongbook-list{display:flex;flex-direction:column;gap:12px}
+        .wrongbook-item{background:var(--bg-secondary);border-radius:12px;padding:16px;box-shadow:0 2px 10px var(--shadow);cursor:pointer;transition:.2s;border-left:4px solid var(--danger)}
+        .wrongbook-item:hover{transform:translateX(4px);box-shadow:0 4px 15px var(--shadow)}
+        .wrongbook-item-header{display:flex;justify-content:space-between;align-items:center}
+        .wrongbook-item-title{font-weight:600;font-size:1rem;flex:1}
+        .wrongbook-item-meta{display:flex;align-items:center;gap:12px}
+        .wrongbook-error-count{background:var(--danger);color:#fff;padding:4px 12px;border-radius:20px;font-size:.85rem;font-weight:600}
+        .wrongbook-error-date{color:var(--text-secondary);font-size:.85rem}
+        .wrongbook-item-details{display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)}
+        .wrongbook-item.expanded .wrongbook-item-details{display:block;animation:fadeIn .3s}
+        .wrongbook-actions{display:flex;gap:8px;margin-top:12px}
+        .wrongbook-clear-all{background:var(--bg-secondary);border-radius:12px;padding:20px;text-align:center;margin-top:24px;box-shadow:0 2px 10px var(--shadow)}
+        .empty-wrongbook{text-align:center;padding:60px 20px;background:var(--bg-secondary);border-radius:16px;box-shadow:0 4px 20px var(--shadow)}
+        .empty-wrongbook-icon{font-size:5rem;margin-bottom:20px}
+        .empty-wrongbook-text{font-size:1.2rem;color:var(--success);margin-bottom:8px}
+        .empty-wrongbook-hint{color:var(--text-secondary);font-size:.95rem}
+        .modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:200;justify-content:center;align-items:center;padding:20px}
+        .modal-overlay.show{display:flex;animation:fadeIn .2s}
+        .modal{background:var(--bg-secondary);border-radius:16px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;padding:24px}
+        .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+        .modal-title{font-size:1.3rem;font-weight:600}
+        .modal-close{background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--text-secondary);padding:4px}
+        .modal-close:hover{color:var(--danger)}
+        .form-group{margin-bottom:16px}
+        .form-label{display:block;margin-bottom:6px;font-weight:500}
+        .form-label .required{color:var(--danger)}
+        .form-input,.form-textarea,.form-select{width:100%;padding:10px 14px;border:2px solid var(--border);border-radius:8px;font-size:1rem;background:var(--bg-primary);color:var(--text-primary);transition:border-color .2s}
+        .form-input:focus,.form-textarea:focus,.form-select:focus{outline:none;border-color:var(--accent)}
+        .form-textarea{min-height:100px;resize:vertical}
+        .form-error{color:var(--danger);font-size:.85rem;margin-top:4px}
+        .form-hint{color:var(--text-secondary);font-size:.85rem;margin-top:4px}
+        .form-actions{display:flex;gap:12px;margin-top:24px}
+        .form-btn{flex:1;padding:12px;border:none;border-radius:8px;font-size:1rem;font-weight:600;cursor:pointer;transition:.2s}
+        .form-btn:active{transform:scale(.98)}
+        .form-btn.submit{background:var(--success);color:#fff}
+        .form-btn.cancel{background:var(--bg-primary);color:var(--text-primary);border:2px solid var(--border)}
+        .empty-state{text-align:center;padding:60px 20px;color:var(--text-secondary)}
+        .empty-icon{font-size:4rem;margin-bottom:20px}
+        .empty-text{font-size:1.1rem;margin-bottom:20px}
+        .stats{text-align:center;padding:12px;color:var(--text-secondary);font-size:.9rem}
+        .hidden{display:none!important}
+        @media(max-width:768px){.navbar{padding:10px 12px}.nav-btn,.mode-btn{padding:6px 12px;font-size:.85rem}.quiz-card,.quiz-result{padding:20px}.score-stats{flex-direction:column;gap:15px}.wrongbook-stats{flex-direction:column}}
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo"><span style="font-size:1.5rem">📚</span><span>C# 复习</span></div>
+        <div class="nav-buttons">
+            <div class="mode-switch">
+                <button class="mode-btn active" data-mode="review" onclick="switchMode('review')">📖 复习</button>
+                <button class="mode-btn" data-mode="quiz" onclick="switchMode('quiz')">✏️ 测验</button>
+                <button class="mode-btn" data-mode="wrongbook" onclick="switchMode('wrongbook')">📕 错题本</button>
+            </div>
+        </div>
+    </nav>
+    <main class="container">
+        <!-- 复习模式 -->
+        <div id="reviewMode" class="hidden">
+            <div class="filters">
+                <input type="text" class="search-box" id="searchInput" placeholder="🔍 搜索..." oninput="filterCards()">
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-difficulty="all" onclick="setDifficultyFilter('all')">全部</button>
+                    <button class="filter-btn" data-difficulty="beginner" onclick="setDifficultyFilter('beginner')">🟢 初级</button>
+                    <button class="filter-btn" data-difficulty="intermediate" onclick="setDifficultyFilter('intermediate')">🟡 中级</button>
+                    <button class="filter-btn" data-difficulty="advanced" onclick="setDifficultyFilter('advanced')">🔴 高级</button>
+                </div>
+            </div>
+            <div class="stats" id="stats"></div>
+            <div class="cards-grid" id="cardsGrid"></div>
+            <div class="empty-state" id="emptyState" style="display:none">
+                <div class="empty-icon">📝</div><p class="empty-text">暂无知识点</p>
+                <button class="nav-btn" onclick="openModal()">➕ 添加知识点</button>
+            </div>
+        </div>
+        <!-- 测验模式 -->
+        <div id="quizMode" class="hidden">
+            <div class="quiz-container" id="quizSetup">
+                <div class="quiz-setup">
+                    <h2>✏️ C# 知识测验</h2>
+                    <p id="quizInfo">准备好测试了吗？</p>
+                    <div class="quiz-options">
+                        <div class="quiz-option"><label>题目数量</label><input type="number" id="questionCount" min="1" max="50" value="10"></div>
+                    </div>
+                    <div class="quiz-type-selector">
+                        <button class="quiz-type-btn active" data-type="all" onclick="selectQuizType('all')">📝 全部题型</button>
+                        <button class="quiz-type-btn" data-type="choice" onclick="selectQuizType('choice')">🔘 选择题</button>
+                        <button class="quiz-type-btn" data-type="judge" onclick="selectQuizType('judge')">✓ 判断题</button>
+                        <button class="quiz-type-btn" data-type="fill" onclick="selectQuizType('fill')">💻 代码填空</button>
+                    </div>
+                    <button class="start-quiz-btn" onclick="startQuiz()">🚀 开始测验</button>
+                </div>
+            </div>
+            <div class="quiz-container hidden" id="quizInProgress">
+                <div class="quiz-progress">
+                    <div class="progress-bar-container"><div class="progress-bar" id="progressBar" style="width:0%"></div></div>
+                    <div class="progress-text"><span>📝 第 <span id="currentQ">1</span> / <span id="totalQ">10</span> 题</span><span>✅ <span id="correctCount">0</span> | ❌ <span id="wrongCount">0</span></span></div>
+                </div>
+                <div class="quiz-card"><span class="question-type" id="questionType"></span><div class="question-text" id="questionText"></div><div class="options-list" id="optionsList"></div></div>
+                <div class="answer-feedback hidden" id="answerFeedback"><div class="feedback-header" id="feedbackHeader"></div><div id="feedbackContent"></div><button class="next-btn" id="nextBtn" onclick="nextQuestion()">下一题 →</button></div>
+            </div>
+            <div class="quiz-container hidden" id="quizResult">
+                <div class="quiz-result">
+                    <div class="result-icon" id="resultIcon">🎉</div>
+                    <h2 class="result-title" id="resultTitle">测验完成！</h2>
+                    <p class="result-subtitle" id="resultSubtitle"></p>
+                    <div class="score-display">
+                        <div class="score-number" id="scoreNumber">0</div><div class="score-label">正确率</div>
+                        <div class="score-stats"><div class="score-stat correct"><div class="score-stat-value" id="finalCorrect">0</div><div class="score-stat-label">正确</div></div><div class="score-stat incorrect"><div class="score-stat-value" id="finalWrong">0</div><div class="score-stat-label">错误</div></div></div>
+                    </div>
+                    <div id="highFreqWarning"></div>
+                    <div class="wrong-questions" id="wrongQuestions"></div>
+                    <div class="result-actions">
+                        <button class="result-btn secondary" onclick="switchMode('review')">📖 返回复习</button>
+                        <button class="result-btn secondary" onclick="switchMode('wrongbook')">📕 错题本</button>
+                        <button class="result-btn primary" onclick="restartQuiz()">🔄 重新测验</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 错题本模式 -->
+        <div id="wrongbookMode" class="hidden">
+            <div class="wrongbook-header"><h2>📕 错题本</h2><button class="nav-btn danger" onclick="clearAllWrongbook()">🗑️ 清除全部</button></div>
+            <div class="wrongbook-stats" id="wrongbookStats">
+                <div class="wrongbook-stat"><div class="wrongbook-stat-value" id="wrongbookTotal">0</div><div class="wrongbook-stat-label">错题总数</div></div>
+                <div class="wrongbook-stat"><div class="wrongbook-stat-value" id="wrongbookUnique">0</div><div class="wrongbook-stat-label">涉及知识点</div></div>
+                <div class="wrongbook-stat"><div class="wrongbook-stat-value" id="wrongbookAccuracy">0%</div><div class="wrongbook-stat-label">历史正确率</div></div>
+            </div>
+            <div id="wrongbookList" class="wrongbook-list"></div>
+            <div id="wrongbookEmpty" class="empty-wrongbook hidden">
+                <div class="empty-wrongbook-icon">🎊</div>
+                <p class="empty-wrongbook-text">暂无错题记录，继续保持！</p>
+                <p class="empty-wrongbook-hint">答错的题目会自动记录到这里</p>
+            </div>
+            <div class="wrongbook-clear-all"><p style="color:var(--text-secondary);margin-bottom:12px">💡 提示：答对的题目不会计入错题本</p><button class="nav-btn" onclick="switchMode('quiz')">✏️ 开始测验</button></div>
+        </div>
+    </main>
+    <!-- 添加/编辑弹窗 -->
+    <div class="modal-overlay" id="modalOverlay" onclick="handleOverlayClick(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header"><h2 class="modal-title" id="modalTitle">添加知识点</h2><button class="modal-close" onclick="closeModal()">&times;</button></div>
+            <form id="knowledgeForm" onsubmit="handleSubmit(event)">
+                <div class="form-group"><label class="form-label">题目 <span class="required">*</span></label><input type="text" class="form-input" id="titleInput" placeholder="例如：C# 中的委托是什么？" required></div>
+                <div class="form-group"><label class="form-label">解释 <span class="required">*</span></label><textarea class="form-textarea" id="explanationInput" placeholder="详细解释..." required></textarea></div>
+                <div class="form-group"><label class="form-label">代码示例</label><textarea class="form-textarea code-block" id="codeInput" placeholder="// 代码..." style="min-height:150px"></textarea><div class="form-hint">建议填写代码示例</div></div>
+                <div class="form-group"><label class="form-label">拓展说明</label><textarea class="form-textarea" id="extensionInput" placeholder="相关知识点..."></textarea></div>
+                <div class="form-group"><label class="form-label">难度</label><select class="form-select" id="difficultyInput"><option value="beginner">🟢 初级</option><option value="intermediate">🟡 中级</option><option value="advanced">🔴 高级</option></select></div>
+                <div class="form-group"><label class="form-label">标签</label><input type="text" class="form-input" id="tagsInput" placeholder="标签用逗号分隔"><div class="form-hint">如：委托, 事件, 基础</div></div>
+                <div class="form-actions"><button type="button" class="form-btn cancel" onclick="closeModal()">取消</button><button type="submit" class="form-btn submit">保存</button></div>
+            </form>
+        </div>
+    </div>
+    <script>
+const DEFAULT_KNOWLEDGE=[{id:'d1',title:'async/await 异步关键字',explanation:'async/await 是 C# 5.0 引入的异步编程关键字。async 修饰符表示方法是异步的，await 用于等待异步操作完成。',code:'public async Task<string> GetDataAsync() {\n    using var client = new HttpClient();\n    return await client.GetStringAsync(url);\n}',extension:'异步方法必须返回 Task 或 Task<T>。',difficulty:'intermediate',tags:['异步','async','await']},{id:'d2',title:'Task.Run 用于CPU密集型',explanation:'Task.Run 用于将 CPU 密集型工作移到线程池线程上执行。',code:'var result = await Task.Run(() => ComputeHeavy(data));',extension:'对于 I/O 密集型操作，使用 async/await 更高效。',difficulty:'intermediate',tags:['Task','多线程']},{id:'d3',title:'Task.WhenAll 并行执行',explanation:'Task.WhenAll 在所有任务完成时完成，实现并行执行。',code:'string[] r = await Task.WhenAll(t1, t2);',extension:'比顺序 await 更快。',difficulty:'intermediate',tags:['Task','并行']},{id:'d4',title:'CancellationToken 取消操作',explanation:'CancellationToken 用于取消异步操作。',code:'cts.Cancel();',extension:'定期检查 IsCancellationRequested。',difficulty:'advanced',tags:['取消','异步']},{id:'d5',title:'ConfigureAwait(false)',explanation:'ConfigureAwait(false) 避免回到原始上下文，提高库性能。',code:'await client.GetAsync(url).ConfigureAwait(false);',extension:'库代码中使用。',difficulty:'advanced',tags:['性能']},{id:'d6',title:'ValueTask 减少分配',explanation:'ValueTask<T> 用于优化已知会同步完成的异步操作。',code:'public ValueTask<int> GetAsync() => new ValueTask<int>(42);',extension:'只能 await 一次。',difficulty:'advanced',tags:['ValueTask','性能']},{id:'d7',title:'IAsyncEnumerable 异步流',explanation:'IAsyncEnumerable<T> 允许异步生成数据流。',code:'async IAsyncEnumerable<int> Generate() {\n    for(int i=0;i<10;i++){\n        await Task.Delay(100);\n        yield return i;\n    }\n}',extension:'处理大数据集时避免一次性加载。',difficulty:'advanced',tags:['异步流']},{id:'d8',title:'SemaphoreSlim 限制并发',explanation:'SemaphoreSlim 限制同时执行的异步操作数量。',code:'var s = new SemaphoreSlim(3);\nawait s.WaitAsync();\ntry { await ProcessAsync(); }\nfinally { s.Release(); }',extension:'使用 WaitAsync() 避免阻塞。',difficulty:'intermediate',tags:['并发']}];
+
+let knowledgeList=[],currentDifficulty='all',searchTerm='',editingId=null,currentMode='review',selectedQuizType='all';
+let quizQuestions=[],currentQuestionIndex=0,correctCount=0,wrongQuestions=[];
+let wrongbookData={};
+
+document.addEventListener('DOMContentLoaded',()=>{loadTheme();loadKnowledge();loadWrongbook();renderCards();updateQuizInfo();updateWrongbookStats()});
+
+function switchMode(mode){currentMode=mode;document.querySelectorAll('.mode-btn').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));['reviewMode','quizMode','wrongbookMode'].forEach(id=>document.getElementById(id).classList.toggle('hidden',!id.includes(mode.charAt(0).toUpperCase()+mode.slice(1))&&id!=='reviewMode'&&id!=='quizMode'&&id!=='wrongbookMode'));if(mode==='wrongbook')renderWrongbook();else if(mode==='quiz')resetQuiz()}
+
+function generateId(){return Date.now().toString(36)+Math.random().toString(36).substr(2)}
+
+function saveKnowledge(){localStorage.setItem('csharp-knowledge',JSON.stringify(knowledgeList));updateStats();updateQuizInfo()}
+function loadKnowledge(){const s=localStorage.getItem('csharp-knowledge');knowledgeList=s?JSON.parse(s):JSON.parse(JSON.stringify(DEFAULT_KNOWLEDGE));if(!s)saveKnowledge()}
+
+function saveWrongbook(){localStorage.setItem('csharp-wrongbook',JSON.stringify(wrongbookData));updateWrongbookStats()}
+function loadWrongbook(){const s=localStorage.getItem('csharp-wrongbook');wrongbookData=s?JSON.parse(s):{}}
+
+function recordWrongAnswer(id,title){if(wrongbookData[id]){wrongbookData[id].errorCount++;wrongbookData[id].lastErrorDate=Date.now()}else{wrongbookData[id]={errorCount:1,lastErrorDate:Date.now(),title:title}}saveWrongbook()}
+function clearWrongbookItem(id){delete wrongbookData[id];saveWrongbook();renderWrongbook()}
+function clearAllWrongbook(){if(!Object.keys(wrongbookData).length){alert('暂无错题记录');return}if(confirm('⚠️ 确定清除全部错题记录？')){wrongbookData={};saveWrongbook();renderWrongbook();alert('✅ 已清除')}}
+function cleanupWrongbookOnDelete(id){if(wrongbookData[id]){delete wrongbookData[id];saveWrongbook()}}
+
+function updateWrongbookStats(){const total=Object.values(wrongbookData).reduce((s,i)=>s+i.errorCount,0);const unique=Object.keys(wrongbookData).length;let acc=0;const ss=localStorage.getItem('csharp-quiz-stats');if(ss){const st=JSON.parse(ss);if(st.total>0)acc=Math.round(st.correct/st.total*100)}document.getElementById('wrongbookTotal').textContent=total;document.getElementById('wrongbookUnique').textContent=unique;document.getElementById('wrongbookAccuracy').textContent=acc+'%'}
+
+function renderWrongbook(){const lc=document.getElementById('wrongbookList');const ec=document.getElementById('wrongbookEmpty');const sc=document.getElementById('wrongbookStats');const entries=Object.entries(wrongbookData);if(!entries.length){lc.innerHTML='';ec.classList.remove('hidden');sc.style.display='none';return}ec.classList.add('hidden');sc.style.display='flex';entries.sort((a,b)=>b[1].errorCount-a[1].errorCount);lc.innerHTML=entries.map(([id,data])=>{const k=knowledgeList.find(x=>x.id===id);const ld=new Date(data.lastErrorDate).toLocaleDateString('zh-CN');return`<div class="wrongbook-item" onclick="this.classList.toggle('expanded')"><div class="wrongbook-item-header"><span class="wrongbook-item-title">${escapeHtml(data.title)}</span><div class="wrongbook-item-meta"><span class="wrongbook-error-count">❌ ${data.errorCount}次</span><span class="wrongbook-error-date">${ld}</span></div></div><div class="wrongbook-item-details">${k?`<div class="detail-section"><div class="detail-label">📖 解释</div><div class="detail-content">${escapeHtml(k.explanation)}</div></div>${k.code?`<div class="detail-section"><div class="detail-label">💻 代码</div><pre class="code-block">${escapeHtml(k.code)}</pre></div>`:''}${k.extension?`<div class="detail-section"><div class="detail-label">🚀 拓展</div><div class="detail-content">${escapeHtml(k.extension)}</div></div>`:''}`:'<p style="color:var(--danger)">⚠️ 知识点已删除</p>'}<div class="wrongbook-actions"><button class="nav-btn secondary" onclick="event.stopPropagation();switchMode('review')">📖 复习</button><button class="nav-btn danger" onclick="event.stopPropagation();clearWrongbookItem('${id}')">✓ 移除</button></div></div></div>`}).join('')}
+
+function escapeHtml(str){if(!str)return'';return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;')}
+
+function loadTheme(){const t=localStorage.getItem('theme')||'light';document.documentElement.setAttribute('data-theme',t)}
+
+function updateQuizInfo(){const c=knowledgeList.length;document.getElementById('quizInfo').textContent=`题库共 ${c} 道题`;document.getElementById('questionCount').max=c;if(parseInt(document.getElementById('questionCount').value)>c)document.getElementById('questionCount').value=c}
+function selectQuizType(type){selectedQuizType=type;document.querySelectorAll('.quiz-type-btn').forEach(b=>b.classList.toggle('active',b.dataset.type===type))}
+
+function generateQuestions(){const count=parseInt(document.getElementById('questionCount').value)||10;const types=selectedQuizType==='all'?['choice','judge','fill']:[selectedQuizType];const shuffled=[...knowledgeList].sort(()=>Math.random()-.5).slice(0,Math.min(count,shuffled.length));const questions=[];shuffled.forEach((item,idx)=>{const type=types[idx%types.length];if(type==='choice')questions.push(generateChoiceQuestion(item));else if(type==='judge')questions.push(generateJudgeQuestion(item));else if(type==='fill')questions.push(generateFillQuestion(item))});return questions}
+
+function generateChoiceQuestion(item){const others=knowledgeList.filter(k=>k.id!==item.id).sort(()=>Math.random()-.5).slice(0,3);const distractors=others.map(k=>Math.random()>.5?k.title:(k.code?extractCodeKeyword(k.code):k.title));const correct=item.title;const options=shuffleArray([correct,...distractors]);return{type:'choice',typeLabel:'选择题',question:`以下哪个是关于 "${item.title}" 的正确描述？`,options,correctIndex:options.indexOf(correct),knowledge:item}}
+
+function generateJudgeQuestion(item){const isCorrect=Math.random()>.5;let statement,correct;if(isCorrect){statement=item.explanation.substring(0,50)+(item.explanation.length>50?'...':'');correct=true}else{const kw=extractKeywords(item.explanation);if(kw.length){const wk=getRandomWrongKeyword(kw[0]);statement=item.explanation.replace(kw[0],wk).substring(0,60)+'...'}else statement=item.explanation.substring(0,55)+'... [错误]';correct=false}return{type:'judge',typeLabel:'判断题',question:`判断以下陈述是否正确：\n\n${statement}`,options:['正确','错误'],correctIndex:correct?0:1,knowledge:item}}
+
+function generateFillQuestion(item){if(!item.code)return generateChoiceQuestion(item);const kws=extractCodeKeywords(item.code);if(!kws.length)return generateChoiceQuestion(item);const target=kws[Math.floor(Math.random()*kws.length)];const blanked=item.code.replace(new RegExp(`\\b${target}\\b`,'g'),'___');const wrong=getWrongCodeOptions(target);return{type:'fill',typeLabel:'代码填空',question:`在以下代码中，空白处应该填入什么？\n\n${blanked}`,options:shuffleArray([target,...wrong]),correctIndex:shuffleArray([target,...wrong]).indexOf(target),knowledge:item}}
+
+function extractCodeKeywords(code){const kw=['async','await','Task','var','return','public','private','static','new','using','try','catch','finally','throw','foreach','Select','Where','OrderBy','ConfigureAwait','WhenAll','SemaphoreSlim','CancellationToken','ValueTask','yield','IAsyncEnumerable'];return kw.filter(k=>code.includes(k))}
+function extractCodeKeyword(code){const lines=code.split('\n').filter(l=>l.trim()&&!l.trim().startsWith('//'));return lines.length?lines[0].trim().substring(0,30):code.split(' ')[0]}
+function extractKeywords(text){return text.split(/\s+/).filter(w=>w.length>3&&/[\u4e00-\u9fa5a-zA-Z]/.test(w))}
+function getRandomWrongKeyword(c){const o={'async':['await','sync','Task'],'await':['async','wait','Task'],'Task':['Thread','Process','Action'],'var':['let','const','dynamic'],'委托':['事件','接口','类'],'泛型':['继承','多态','封装']};return(o[c]||['错误A','错误B','错误C'])[Math.floor(Math.random()*3)]}
+function getWrongCodeOptions(c){const o={'async':['sync','await','Task','void'],'await':['async','wait','.Result'],'Task':['Thread','Action','Func','void'],'var':['let','const','int'],'return':['throw','yield','break'],'using':['import','include','require'],'ConfigureAwait':['ConfigureWait','ConfigureAsync'],'WhenAll':['WhenAny','WaitAll'],'yield':['return','break'],'IAsyncEnumerable':['IEnumerable','IAsyncEnumerator']};return(o[c]||['错A','错B','错C']).slice(0,3)}
+function shuffleArray(a){const arr=[...a];for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]]}return arr}
+
+function startQuiz(){if(knowledgeList.length<4){alert('至少需要4道题目');return}quizQuestions=generateQuestions();currentQuestionIndex=0;correctCount=0;wrongQuestions=[];document.getElementById('quizSetup').classList.add('hidden');document.getElementById('quizInProgress').classList.remove('hidden');document.getElementById('quizResult').classList.add('hidden');document.getElementById('totalQ').textContent=quizQuestions.length;showQuestion()}
+
+function showQuestion(){const q=quizQuestions[currentQuestionIndex];const prog=(currentQuestionIndex/quizQuestions.length)*100;document.getElementById('progressBar').style.width=prog+'%';document.getElementById('currentQ').textContent=currentQuestionIndex+1;document.getElementById('correctCount').textContent=correctCount;document.getElementById('wrongCount').textContent=wrongQuestions.length;const te=document.getElementById('questionType');te.textContent=q.typeLabel;te.className='question-type '+q.type;document.getElementById('questionText').textContent=q.question;const ol=document.getElementById('optionsList');const letters=['A','B','C','D'];ol.innerHTML=q.options.map((o,i)=>`<div class="option-item" data-index="${i}" onclick="selectOption(${i})"><span class="option-letter">${letters[i]}</span><span class="option-text">${escapeHtml(o)}</span></div>`).join('');document.getElementById('answerFeedback').classList.add('hidden')}
+
+function selectOption(index){const q=quizQuestions[currentQuestionIndex];const opts=document.querySelectorAll('.option-item');opts.forEach(o=>o.classList.add('disabled'));const sel=opts[index];const isCorrect=index===q.correctIndex;if(isCorrect){sel.classList.add('correct');correctCount++}else{sel.classList.add('incorrect');opts[q.correctIndex].classList.add('correct');wrongQuestions.push(q);recordWrongAnswer(q.knowledge.id,q.knowledge.title)}document.getElementById('correctCount').textContent=correctCount;document.getElementById('wrongCount').textContent=wrongQuestions.length;showFeedback(isCorrect,q)}
+
+function showFeedback(isCorrect,q){const fb=document.getElementById('answerFeedback');const fh=document.getElementById('feedbackHeader');const fc=document.getElementById('feedbackContent');fb.classList.remove('hidden','correct','incorrect');fb.classList.add(isCorrect?'correct':'incorrect');fh.className='feedback-header '+(isCorrect?'correct':'incorrect');fh.innerHTML=isCorrect?'✅ 正确！':`❌ 错误（正确答案：${escapeHtml(q.options[q.correctIndex])})`;fc.innerHTML=`<div class="analysis-card"><h4>📖 ${escapeHtml(q.knowledge.title)}</h4><p><strong>解释：</strong>${escapeHtml(q.knowledge.explanation)}</p>${q.knowledge.code?`<pre class="code-block">${escapeHtml(q.knowledge.code)}</pre>`:''}${q.knowledge.extension?`<p style="margin-top:12px"><strong>拓展：</strong>${escapeHtml(q.knowledge.extension)}</p>`:''}</div>`;document.getElementById('nextBtn').textContent=currentQuestionIndex<quizQuestions.length-1?'下一题 →':'查看结果'}
+
+function nextQuestion(){currentQuestionIndex++;if(currentQuestionIndex<quizQuestions.length)showQuestion();else showResult()}
+
+function showResult(){const ss=localStorage.getItem('csharp-quiz-stats');let st=ss?JSON.parse(ss):{total:0,correct:0};st.total+=quizQuestions.length;st.correct+=correctCount;localStorage.setItem('csharp-quiz-stats',JSON.stringify(st));document.getElementById('quizInProgress').classList.add('hidden');document.getElementById('quizResult').classList.remove('hidden');const pct=Math.round(correctCount/quizQuestions.length*100);document.getElementById('scoreNumber').textContent=pct+'%';document.getElementById('finalCorrect').textContent=correctCount;document.getElementById('finalWrong').textContent=quizQuestions.length-correctCount;const icon=document.getElementById('resultIcon');const title=document.getElementById('resultTitle');if(pct>=90){icon.textContent='🏆';title.textContent='太棒了！'}else if(pct>=70){icon.textContent='🎉';title.textContent='不错！'}else if(pct>=50){icon.textContent='💪';title.textContent='加油！'}else{icon.textContent='📚';title.textContent='需多复习'}document.getElementById('resultSubtitle').textContent=`共${quizQuestions.length}题，对${correctCount}题`;renderHighFreqWarning();const wc=document.getElementById('wrongQuestions');if(wrongQuestions.length){wc.innerHTML=`<h3>📝 本次错题(${wrongQuestions.length}题)</h3>`+wrongQuestions.map((q,i)=>`<div class="wrong-question-item" onclick="this.classList.toggle('expanded')"><div class="wrong-question-header"><span class="wrong-question-title">${i+1}. ${escapeHtml(q.knowledge.title)}</span></div><div class="wrong-question-answer">正确答案：${escapeHtml(q.options[q.correctIndex])}</div></div>`).join('')}else{wc.innerHTML='<p style="color:var(--success);font-weight:600">🎊 太棒了！本次全对！</p>'}}
+
+function renderHighFreqWarning(){const c=document.getElementById('highFreqWarning');if(!wrongQuestions.length){c.innerHTML='';return}const ids=wrongQuestions.map(q=>q.knowledge.id);const hfItems=ids.filter(id=>wrongbookData[id]&&wrongbookData[id].errorCount>1).map(id=>({id,title:wrongbookData[id].title,count:wrongbookData[id].errorCount}));if(!hfItems.length){c.innerHTML='';return}const unique=new Set(ids).size;c.innerHTML=`<div class="high-frequency-warn"><h4>⚠️ 高频错误</h4><p>本次错${wrongQuestions.length}题，涉及${unique}个知识点。以下知识点已多次错误：</p><div>${hfItems.map(i=>`<span class="high-freq-item">${escapeHtml(i.title)}<span class="high-freq-badge">已错${i.count}次</span></span>`).join('')}</div></div>`}
+
+function resetQuiz(){document.getElementById('quizSetup').classList.remove('hidden');document.getElementById('quizInProgress').classList.add('hidden');document.getElementById('quizResult').classList.add('hidden')}
+function restartQuiz(){resetQuiz();updateQuizInfo()}
+
+function filterCards(){searchTerm=document.getElementById('searchInput').value.toLowerCase();renderCards()}
+function setDifficultyFilter(d){currentDifficulty=d;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.toggle('active',b.dataset.difficulty===d));renderCards()}
+
+function renderCards(){const grid=document.getElementById('cardsGrid');const empty=document.getElementById('emptyState');const filtered=knowledgeList.filter(k=>{const ms=!searchTerm||k.title.toLowerCase().includes(searchTerm)||k.explanation.toLowerCase().includes(searchTerm);const md=currentDifficulty==='all'||k.difficulty===currentDifficulty;return ms&&md});if(!filtered.length){grid.innerHTML='';empty.style.display=knowledgeList.length?'none':'block';return}empty.style.display='none';grid.innerHTML=filtered.map(k=>{const dl={beginner:'初级',intermediate:'中级',advanced:'高级'};const dd={beginner:'🟢',intermediate:'🟡',advanced:'🔴'};return`<div class="card" onclick="toggleCard(this)"><div class="card-header"><div class="card-title">${escapeHtml(k.title)}</div><span class="card-difficulty difficulty-${k.difficulty}">${dd[k.difficulty]} ${dl[k.difficulty]}</span></div><div class="card-tags">${(k.tags||[]).map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('')}</div><div class="card-preview">${escapeHtml(k.explanation)}</div><div class="card-details"><div class="detail-section"><div class="detail-label">📖 解释</div><div class="detail-content">${escapeHtml(k.explanation)}</div></div>${k.code?`<div class="detail-section"><div class="detail-label">💻 代码</div><pre class="code-block">${escapeHtml(k.code)}</pre></div>`:''}${k.extension?`<div class="detail-section"><div class="detail-label">🚀 拓展</div><div class="detail-content">${escapeHtml(k.extension)}</div></div>`:''}<div class="card-actions"><button class="card-btn edit" onclick="event.stopPropagation();openModal('${k.id}')">✏️ 编辑</button><button class="card-btn delete" onclick="event.stopPropagation();deleteKnowledge('${k.id}')">🗑️ 删除</button></div></div></div>`}).join('')}}function toggleCard(el){el.classList.toggle('expanded')}function updateStats(){const total=knowledgeList.length;document.getElementById('stats').textContent=`共 ${total} 个知识点`}
+
+function openModal(id=null){editingId=id;document.getElementById('modalTitle').textContent=id?'✏️ 编辑知识点':'➕ 添加知识点';if(id){const k=knowledgeList.find(x=>x.id===id);if(k){document.getElementById('titleInput').value=k.title;document.getElementById('explanationInput').value=k.explanation;document.getElementById('codeInput').value=k.code||'';document.getElementById('extensionInput').value=k.extension||'';document.getElementById('difficultyInput').value=k.difficulty;document.getElementById('tagsInput').value=(k.tags||[]).join(', ')}}else{document.getElementById('titleInput').value='';document.getElementById('explanationInput').value='';document.getElementById('codeInput').value='';document.getElementById('extensionInput').value='';document.getElementById('difficultyInput').value='beginner';document.getElementById('tagsInput').value=''}document.getElementById('modalOverlay').classList.add('show')}function closeModal(){document.getElementById('modalOverlay').classList.remove('show');editingId=null}function handleOverlayClick(e){if(e.target===document.getElementById('modalOverlay'))closeModal()}function handleSubmit(e){e.preventDefault();const title=document.getElementById('titleInput').value.trim();const explanation=document.getElementById('explanationInput').value.trim();const code=document.getElementById('codeInput').value.trim();const extension=document.getElementById('extensionInput').value.trim();const difficulty=document.getElementById('difficultyInput').value;const tags=document.getElementById('tagsInput').value.split(',').map(t=>t.trim()).filter(t=>t);if(!title||!explanation){alert('请填写必填项');return}if(editingId){const idx=knowledgeList.findIndex(x=>x.id===editingId);if(idx>-1){knowledgeList[idx]={id:editingId,title,explanation,code,extension,difficulty,tags}}}else{knowledgeList.push({id:generateId(),title,explanation,code,extension,difficulty,tags})}saveKnowledge();renderCards();closeModal()}
+
+function deleteKnowledge(id){if(!confirm('确定删除？'))return;cleanupWrongbookOnDelete(id);knowledgeList=knowledgeList.filter(k=>k.id!==id);saveKnowledge();renderCards()}
+    </script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(powershell.exe -Command \"\\(New-Object -COM WScript.Shell\\).CreateShortcut\\('C:\\\\Users\\\\CC\\\\Desktop\\\\Trae CN.lnk'\\).TargetPath\")",
+      "Bash(powershell.exe -Command \"\\(New-Object -COM WScript.Shell\\).CreateShortcut\\('C:\\\\Users\\\\CC\\\\Desktop\\\\CC Switch.lnk'\\).TargetPath\")"
+    ]
+  }
+}
