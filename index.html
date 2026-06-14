@@ -1,0 +1,1389 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="C# 知识复习卡片应用">
+    <title>C# 复习</title>
+    
+    <style>
+        /* ========== CSS 变量定义 ========== */
+        :root {
+            /* 浅色主题 */
+            --bg-primary: #f5f7fa;
+            --bg-secondary: #ffffff;
+            --bg-card: #ffffff;
+            --text-primary: #2c3e50;
+            --text-secondary: #5a6c7d;
+            --accent: #3498db;
+            --accent-hover: #2980b9;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --border: #e0e6ed;
+            --shadow: rgba(0, 0, 0, 0.1);
+            --code-bg: #282c34;
+            --tag-bg: #3498db20;
+            --difficulty-beginner: #27ae60;
+            --difficulty-intermediate: #f39c12;
+            --difficulty-advanced: #e74c3c;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-card: #0f3460;
+            --text-primary: #eaeaea;
+            --text-secondary: #a0a0a0;
+            --accent: #4a9eff;
+            --accent-hover: #3498db;
+            --border: #2c3e50;
+            --shadow: rgba(0, 0, 0, 0.3);
+            --tag-bg: #4a9eff30;
+        }
+
+        /* ========== 全局样式 ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* ========== 导航栏 ========== */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-secondary);
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px var(--shadow);
+            z-index: 100;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-icon {
+            font-size: 1.5rem;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+
+        .nav-btn:active {
+            transform: scale(0.95);
+        }
+
+        .nav-btn.secondary {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .nav-btn.danger {
+            background: var(--danger);
+        }
+
+        /* ========== 主容器 ========== */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 80px 20px 40px;
+        }
+
+        /* ========== 搜索和筛选区域 ========== */
+        .filters {
+            background: var(--bg-secondary);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 10px var(--shadow);
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            transition: border-color 0.2s;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .filter-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid var(--border);
+            border-radius: 20px;
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .filter-btn.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        /* ========== 卡片网格 ========== */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .cards-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* ========== 知识点卡片 ========== */
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px var(--shadow);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px var(--shadow);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            flex: 1;
+        }
+
+        .card-difficulty {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: white;
+            margin-left: 12px;
+            white-space: nowrap;
+        }
+
+        .difficulty-beginner { background: var(--difficulty-beginner); }
+        .difficulty-intermediate { background: var(--difficulty-intermediate); }
+        .difficulty-advanced { background: var(--difficulty-advanced); }
+
+        .card-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .tag {
+            background: var(--tag-bg);
+            color: var(--accent);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+
+        .card-preview {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .card.expanded .card-preview {
+            display: none;
+        }
+
+        .card-details {
+            display: none;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        .card.expanded .card-details {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .detail-section {
+            margin-bottom: 16px;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .detail-content {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .code-block {
+            background: var(--code-bg);
+            color: #abb2bf;
+            padding: 16px;
+            border-radius: 8px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        .card-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .card-btn:active {
+            transform: scale(0.95);
+        }
+
+        .card-btn.edit {
+            background: var(--accent);
+            color: white;
+        }
+
+        .card-btn.delete {
+            background: var(--danger);
+            color: white;
+        }
+
+        /* ========== 模态弹窗 ========== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+            animation: fadeIn 0.2s;
+        }
+
+        .modal {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            padding: 4px;
+        }
+
+        .modal-close:hover {
+            color: var(--danger);
+        }
+
+        /* ========== 表单 ========== */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .form-label .required {
+            color: var(--danger);
+        }
+
+        .form-input,
+        .form-textarea,
+        .form-select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-input.error {
+            border-color: var(--danger);
+        }
+
+        .form-error {
+            color: var(--danger);
+            font-size: 0.85rem;
+            margin-top: 4px;
+        }
+
+        .form-hint {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-top: 4px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .form-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .form-btn:active {
+            transform: scale(0.98);
+        }
+
+        .form-btn.submit {
+            background: var(--success);
+            color: white;
+        }
+
+        .form-btn.cancel {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border: 2px solid var(--border);
+        }
+
+        /* ========== 空状态 ========== */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .empty-text {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+
+        /* ========== 统计信息 ========== */
+        .stats {
+            text-align: center;
+            padding: 12px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* ========== 触摸反馈 ========== */
+        @media (hover: none) {
+            .card:active,
+            .nav-btn:active,
+            .card-btn:active,
+            .form-btn:active {
+                transform: scale(0.95);
+            }
+        }
+
+        /* ========== 滚动条 ========== */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <!-- ========== 导航栏 ========== -->
+    <nav class="navbar">
+        <div class="logo">
+            <span class="logo-icon">📚</span>
+            <span>C# 复习</span>
+        </div>
+        <div class="nav-buttons">
+            <button class="nav-btn" onclick="openModal()" title="添加新知识点">➕ 添加</button>
+            <button class="nav-btn secondary" onclick="document.getElementById('importInput').click()" title="导入数据">📥 导入</button>
+            <button class="nav-btn secondary" onclick="exportData()" title="导出数据">📤 导出</button>
+            <button class="nav-btn secondary" onclick="toggleTheme()" id="themeBtn" title="切换主题">🌙</button>
+            <button class="nav-btn danger" onclick="resetData()" title="重置为默认数据">🔄 重置</button>
+        </div>
+        <!-- 隐藏的文件输入框 -->
+        <input type="file" id="importInput" accept=".json" style="display: none;" onchange="handleImport(event)">
+    </nav>
+
+    <!-- ========== 主容器 ========== -->
+    <main class="container">
+        <!-- ========== 搜索和筛选 ========== -->
+        <div class="filters">
+            <input 
+                type="text" 
+                class="search-box" 
+                id="searchInput" 
+                placeholder="🔍 搜索题目或解释..."
+                oninput="filterCards()"
+            >
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-difficulty="all" onclick="setDifficultyFilter('all')">全部</button>
+                <button class="filter-btn" data-difficulty="beginner" onclick="setDifficultyFilter('beginner')">🟢 初级</button>
+                <button class="filter-btn" data-difficulty="intermediate" onclick="setDifficultyFilter('intermediate')">🟡 中级</button>
+                <button class="filter-btn" data-difficulty="advanced" onclick="setDifficultyFilter('advanced')">🔴 高级</button>
+            </div>
+        </div>
+
+        <!-- ========== 统计信息 ========== -->
+        <div class="stats" id="stats"></div>
+
+        <!-- ========== 卡片网格 ========== -->
+        <div class="cards-grid" id="cardsGrid"></div>
+
+        <!-- ========== 空状态 ========== -->
+        <div class="empty-state" id="emptyState" style="display: none;">
+            <div class="empty-icon">📝</div>
+            <p class="empty-text">暂无知识点</p>
+            <button class="nav-btn" onclick="openModal()">➕ 添加第一个知识点</button>
+        </div>
+    </main>
+
+    <!-- ========== 添加/编辑模态弹窗 ========== -->
+    <div class="modal-overlay" id="modalOverlay" onclick="handleOverlayClick(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">添加知识点</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            
+            <form id="knowledgeForm" onsubmit="handleSubmit(event)">
+                <!-- 题目 -->
+                <div class="form-group">
+                    <label class="form-label">
+                        题目 <span class="required">*</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        class="form-input" 
+                        id="titleInput" 
+                        placeholder="例如：C# 中的委托是什么？"
+                        required
+                    >
+                    <div class="form-error" id="titleError"></div>
+                </div>
+
+                <!-- 解释 -->
+                <div class="form-group">
+                    <label class="form-label">
+                        解释 <span class="required">*</span>
+                    </label>
+                    <textarea 
+                        class="form-textarea" 
+                        id="explanationInput" 
+                        placeholder="详细解释这个概念..."
+                        required
+                    ></textarea>
+                    <div class="form-error" id="explanationError"></div>
+                </div>
+
+                <!-- 代码 -->
+                <div class="form-group">
+                    <label class="form-label">代码示例</label>
+                    <textarea 
+                        class="form-textarea code-block" 
+                        id="codeInput" 
+                        placeholder="// 在此输入代码示例..."
+                        style="min-height: 150px;"
+                    ></textarea>
+                    <div class="form-hint">建议填写代码示例以加深理解</div>
+                </div>
+
+                <!-- 拓展 -->
+                <div class="form-group">
+                    <label class="form-label">拓展说明</label>
+                    <textarea 
+                        class="form-textarea" 
+                        id="extensionInput" 
+                        placeholder="相关知识点、实际应用场景等..."
+                    ></textarea>
+                </div>
+
+                <!-- 难度 -->
+                <div class="form-group">
+                    <label class="form-label">难度</label>
+                    <select class="form-select" id="difficultyInput">
+                        <option value="beginner">🟢 初级</option>
+                        <option value="intermediate">🟡 中级</option>
+                        <option value="advanced">🔴 高级</option>
+                    </select>
+                </div>
+
+                <!-- 标签 -->
+                <div class="form-group">
+                    <label class="form-label">标签</label>
+                    <input 
+                        type="text" 
+                        class="form-input" 
+                        id="tagsInput" 
+                        placeholder="委托, 事件, 基础 (用逗号分隔)"
+                    >
+                    <div class="form-hint">多个标签用逗号分隔</div>
+                </div>
+
+                <!-- 按钮 -->
+                <div class="form-actions">
+                    <button type="button" class="form-btn cancel" onclick="closeModal()">取消</button>
+                    <button type="submit" class="form-btn submit">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ========== 导入确认弹窗 ========== -->
+    <div class="modal-overlay" id="importModalOverlay">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2 class="modal-title">📥 导入确认</h2>
+            </div>
+            <div style="margin: 20px 0;">
+                <p id="importMessage" style="margin-bottom: 20px; color: var(--text-secondary);"></p>
+                <div id="importPreview" style="max-height: 200px; overflow-y: auto; background: var(--bg-primary); padding: 12px; border-radius: 8px; font-size: 0.9rem;"></div>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="form-btn cancel" onclick="closeImportModal()">取消</button>
+                <button type="button" class="form-btn" style="background: var(--warning); color: white;" onclick="importWithMerge()">🔗 合并现有数据</button>
+                <button type="button" class="form-btn submit" onclick="importWithReplace()">🔄 替换全部</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ========== 默认知识点数据 ========== */
+        const DEFAULT_KNOWLEDGE = [
+            {
+                id: generateId(),
+                title: '什么是委托（Delegate）？',
+                explanation: '委托是一种类型安全的函数指针，它封装了具有特定返回值和参数的方法。委托可以像其他类型一样被传递、组合和调用。',
+                code: `// 声明委托
+public delegate void MyDelegate(string message);
+
+// 定义与委托签名匹配的方法
+public void ShowMessage(string msg) {
+    Console.WriteLine(msg);
+}
+
+// 使用委托
+MyDelegate del = new MyDelegate(ShowMessage);
+del("Hello, Delegate!");`,
+                extension: '委托常用于事件处理、回调函数和异步编程。可以使用多播委托同时调用多个方法。',
+                difficulty: 'beginner',
+                tags: ['委托', '基础', '事件']
+            },
+            {
+                id: generateId(),
+                title: 'C# 泛型（Generics）是什么？',
+                explanation: '泛型允许你编写可重用的代码，同时保持类型安全。通过泛型，可以创建不指定具体类型的类、接口和方法，在使用时再指定具体类型。',
+                code: `// 泛型类
+public class Box<T> {
+    private T content;
+    public void Set(T value) => content = value;
+    public T Get() => content;
+}
+
+// 泛型方法
+public T Max<T>(T a, T b) where T : IComparable<T> {
+    return a.CompareTo(b) > 0 ? a : b;
+}
+
+// 使用
+var box = new Box<int>();
+box.Set(42);
+int value = box.Get();`,
+                extension: '泛型约束（where T : constraint）可以限制泛型类型必须满足的条件，如实现某个接口或继承某个类。',
+                difficulty: 'beginner',
+                tags: ['泛型', '集合', '类型安全']
+            },
+            {
+                id: generateId(),
+                title: 'async/await 异步编程',
+                explanation: 'async/await 是 C# 5.0 引入的异步编程关键字，让异步代码看起来像同步代码，提高了代码的可读性和可维护性。',
+                code: `// 异步方法定义
+public async Task<string> FetchDataAsync(string url) {
+    using var client = new HttpClient();
+    string result = await client.GetStringAsync(url);
+    return result;
+}
+
+// 调用异步方法
+public async Task ProcessAsync() {
+    Console.WriteLine("开始下载...");
+    string data = await FetchDataAsync("https://api.example.com");
+    Console.WriteLine($"下载完成，长度: {data.Length}");
+}
+
+// 使用 ConfigureAwait 优化性能
+await SomeAsync().ConfigureAwait(false);`,
+                extension: '异步方法必须返回 Task 或 Task<T>。void 异步事件处理器例外。应尽量使用 ConfigureAwait(false) 以提高性能。',
+                difficulty: 'intermediate',
+                tags: ['异步', 'async', 'await', '并发']
+            },
+            {
+                id: generateId(),
+                title: 'LINQ 查询语法',
+                explanation: '语言集成查询（LINQ）提供了强大的数据查询能力，支持对集合、数据库、XML 等数据源进行统一查询。',
+                code: `// 查询语法
+var results = from person in people
+              where person.Age > 18
+              orderby person.Name
+              select person.Name;
+
+// 方法语法
+var names = people
+    .Where(p => p.Age > 18)
+    .OrderBy(p => p.Name)
+    .Select(p => p.Name);
+
+// 延迟执行示例
+var query = numbers.Where(n => n > 5); // 不执行
+numbers.Add(10);                       // 修改数据源
+foreach(var n in query) Console.WriteLine(n); // 现在才执行`,
+                extension: 'LINQ 支持两种语法：查询表达式和方法语法。查询语法会被编译器转换为方法语法。LINQ 使用延迟执行，只有在迭代时才真正执行查询。',
+                difficulty: 'intermediate',
+                tags: ['LINQ', '查询', '集合']
+            },
+            {
+                id: generateId(),
+                title: '什么是锁（lock）？',
+                explanation: 'lock 关键字用于确保代码块一次只能被一个线程执行，防止多线程竞争条件导致的并发问题。',
+                code: `private readonly object _lock = new object();
+private int _counter;
+
+// 安全的计数器递增
+public void Increment() {
+    lock (_lock) {
+        _counter++;
+        Console.WriteLine($"Counter: {_counter}");
+    }
+}
+
+// 更好的方式：使用 Interlocked
+public void IncrementBetter() {
+    Interlocked.Increment(ref _counter);
+}
+
+// 或使用 ReaderWriterLockSlim
+private static ReaderWriterLockSlim _rwLock = new ReaderWriterLockSlim();
+
+public void ReadData() {
+    _rwLock.EnterReadLock();
+    try {
+        // 读取操作
+    } finally {
+        _rwLock.ExitReadLock();
+    }
+}`,
+                extension: 'lock 实际上是 Monitor 的语法糖。应避免锁定 this、字符串或公共对象。使用 ReaderWriterLockSlim 可以提高读多写少场景的性能。',
+                difficulty: 'intermediate',
+                tags: ['多线程', '并发', '锁']
+            },
+            {
+                id: generateId(),
+                title: '表达式树（Expression Tree）',
+                explanation: '表达式树是以树形数据结构表示的代码，它们可以在运行时被分析、修改和执行。常用于 LINQ providers 和动态查询构建。',
+                code: `using System.Linq.Expressions;
+
+// 创建表达式树
+Expression<Func<int, int, int>> expr = (a, b) => a + b;
+
+// 编译并执行
+var func = expr.Compile();
+Console.WriteLine(func(3, 4)); // 输出 7
+
+// 动态构建表达式
+ParameterExpression x = Expression.Parameter(typeof(int), "x");
+ParameterExpression y = Expression.Parameter(typeof(int), "y");
+Expression body = Expression.Add(x, y);
+var lambda = Expression.Lambda<Func<int, int, int>>(body, x, y);
+var compiled = lambda.Compile();
+Console.WriteLine(compiled(10, 20)); // 输出 30`,
+                extension: '表达式树是只读的，可以用于构建动态查询。Expression<Func<T>> 用于编译后执行，而 Action<T> 不可表示表达式树。',
+                difficulty: 'advanced',
+                tags: ['表达式树', '动态编程', 'LINQ']
+            },
+            {
+                id: generateId(),
+                title: '依赖注入（Dependency Injection）',
+                explanation: '依赖注入是一种设计模式，通过构造函数或属性将依赖对象注入到类中，而不是在类内部创建。这提高了代码的可测试性和松耦合。',
+                code: `// 定义服务接口
+public interface IEmailService {
+    void Send(string to, string subject, string body);
+}
+
+// 实现服务
+public class EmailService : IEmailService {
+    public void Send(string to, string subject, string body) {
+        Console.WriteLine($"Sending email to {to}");
+    }
+}
+
+// 使用依赖注入的类
+public class UserController {
+    private readonly IEmailService _emailService;
+    
+    // 构造函数注入（推荐）
+    public UserController(IEmailService emailService) {
+        _emailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
+    }
+    
+    public void CreateUser(string email) {
+        // 业务逻辑
+        _emailService.Send(email, "Welcome", "Hello!");
+    }
+}`,
+                extension: '常见 DI 容器有 Microsoft.Extensions.DependencyInjection、Autofac、Ninject。ASP.NET Core 内置了 DI 容器。',
+                difficulty: 'intermediate',
+                tags: ['设计模式', 'DI', '依赖注入', '架构']
+            },
+            {
+                id: generateId(),
+                title: '装箱与拆箱（Boxing/Unboxing）',
+                explanation: '装箱是将值类型转换为 object 或接口类型的过程，拆箱则是反向操作。装箱会创建堆上的对象，增加内存分配和垃圾回收开销。',
+                code: `int value = 123;
+object box = value;    // 装箱：值类型->引用类型
+int unboxed = (int)box; // 拆箱：引用类型->值类型
+
+// 性能问题示例
+List<object> list = new List<object>();
+for (int i = 0; i < 100000; i++) {
+    list.Add(i); // 每次都装箱，产生大量对象
+}
+
+// 正确做法：使用泛型集合
+List<int> genericList = new List<int>();
+for (int i = 0; i < 100000; i++) {
+    genericList.Add(i); // 无装箱，性能更好
+}
+
+// 使用泛型方法避免装箱
+void Print<T>(T value) where T : struct {
+    Console.WriteLine(value);
+}`,
+                extension: '可以通过 FCL（点NET 类库）中的大部分泛型集合避免装箱。struct 默认实现 IEquatable<T> 和 IComparable<T> 接口，避免装箱。',
+                difficulty: 'beginner',
+                tags: ['值类型', '引用类型', '性能', '内存']
+            }
+        ];
+
+        /* ========== 全局状态 ========== */
+        let knowledgeList = [];
+        let currentDifficulty = 'all';
+        let searchTerm = '';
+        let editingId = null;
+
+        /* ========== 初始化 ========== */
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTheme();
+            loadKnowledge();
+            renderCards();
+        });
+
+        /* ========== ID 生成器 ========== */
+        function generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        }
+
+        /* ========== 数据持久化 ========== */
+        function saveKnowledge() {
+            localStorage.setItem('csharp-knowledge', JSON.stringify(knowledgeList));
+            updateStats();
+        }
+
+        function loadKnowledge() {
+            const stored = localStorage.getItem('csharp-knowledge');
+            if (stored) {
+                knowledgeList = JSON.parse(stored);
+            } else {
+                knowledgeList = JSON.parse(JSON.stringify(DEFAULT_KNOWLEDGE));
+                saveKnowledge();
+            }
+        }
+
+        /* ========== 主题切换 ========== */
+        function loadTheme() {
+            const theme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+            updateThemeButton();
+        }
+
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const newTheme = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeButton();
+        }
+
+        function updateThemeButton() {
+            const theme = document.documentElement.getAttribute('data-theme');
+            document.getElementById('themeBtn').textContent = theme === 'dark' ? '☀️' : '🌙';
+        }
+
+        /* ========== 导入功能 ========== */
+        let pendingImportData = null;
+
+        function handleImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    // 验证数据格式
+                    if (!Array.isArray(data)) {
+                        alert('❌ 导入失败：文件格式不正确，需要 JSON 数组格式。');
+                        return;
+                    }
+
+                    // 验证每个知识点
+                    const validItems = data.filter(item => {
+                        return item.title && item.explanation;
+                    });
+
+                    if (validItems.length === 0) {
+                        alert('❌ 导入失败：文件中没有有效的知识点数据。');
+                        return;
+                    }
+
+                    // 为每个知识点生成新ID
+                    validItems.forEach(item => {
+                        item.id = generateId();
+                    });
+
+                    // 显示确认弹窗
+                    pendingImportData = validItems;
+                    showImportModal(validItems.length);
+                } catch (error) {
+                    alert('❌ 导入失败：' + error.message);
+                }
+            };
+            reader.readAsText(file);
+
+            // 清空文件输入，允许重复选择同一文件
+            event.target.value = '';
+        }
+
+        function showImportModal(count) {
+            document.getElementById('importMessage').innerHTML = 
+                `发现 <strong>${count}</strong> 个有效知识点`;
+            
+            const preview = document.getElementById('importPreview');
+            const previews = pendingImportData.slice(0, 5).map(item => 
+                `<div style="padding: 8px 0; border-bottom: 1px solid var(--border);">
+                    <strong>${escapeHtml(item.title)}</strong>
+                    <br><span style="color: var(--text-secondary);">${escapeHtml(item.explanation.substring(0, 50))}...</span>
+                </div>`
+            ).join('');
+            
+            preview.innerHTML = previews + (pendingImportData.length > 5 ? 
+                `<div style="color: var(--text-secondary); padding-top: 8px;">...还有 ${pendingImportData.length - 5} 个</div>` : '');
+
+            document.getElementById('importModalOverlay').classList.add('show');
+        }
+
+        function closeImportModal() {
+            document.getElementById('importModalOverlay').classList.remove('show');
+            pendingImportData = null;
+        }
+
+        function importWithMerge() {
+            if (!pendingImportData) return;
+            
+            // 合并数据（新数据添加到前面）
+            knowledgeList = [...pendingImportData, ...knowledgeList];
+            saveKnowledge();
+            renderCards();
+            closeImportModal();
+            alert(`✅ 成功导入 ${pendingImportData.length} 个知识点（已与现有数据合并）`);
+        }
+
+        function importWithReplace() {
+            if (!pendingImportData) return;
+            
+            const confirmed = confirm('⚠️ 确定要替换全部数据吗？此操作不可撤销。');
+            if (confirmed) {
+                knowledgeList = pendingImportData;
+                saveKnowledge();
+                renderCards();
+                closeImportModal();
+                alert(`✅ 成功导入 ${pendingImportData.length} 个知识点（已替换全部数据）`);
+            }
+        }
+
+        /* ========== 导出功能 ========== */
+        function exportData() {
+            if (knowledgeList.length === 0) {
+                alert('❌ 没有可导出的数据');
+                return;
+            }
+
+            const exportData = knowledgeList.map(item => ({
+                title: item.title,
+                explanation: item.explanation,
+                code: item.code || '',
+                extension: item.extension || '',
+                difficulty: item.difficulty,
+                tags: item.tags
+            }));
+
+            const jsonStr = JSON.stringify(exportData, null, 2);
+            const blob = new Blob([jsonStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `csharp-knowledge-${new Date().toISOString().slice(0,10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            alert(`✅ 已导出 ${knowledgeList.length} 个知识点到文件`);
+        }
+
+        /* ========== 筛选功能 ========== */
+        function setDifficultyFilter(difficulty) {
+            currentDifficulty = difficulty;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.difficulty === difficulty);
+            });
+            renderCards();
+        }
+
+        function filterCards() {
+            searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            renderCards();
+        }
+
+        function matchesFilter(item) {
+            // 难度筛选
+            if (currentDifficulty !== 'all' && item.difficulty !== currentDifficulty) {
+                return false;
+            }
+            
+            // 搜索筛选
+            if (searchTerm) {
+                const titleMatch = item.title.toLowerCase().includes(searchTerm);
+                const explanationMatch = item.explanation.toLowerCase().includes(searchTerm);
+                return titleMatch || explanationMatch;
+            }
+            
+            return true;
+        }
+
+        /* ========== 渲染卡片 ========== */
+        function renderCards() {
+            const grid = document.getElementById('cardsGrid');
+            const emptyState = document.getElementById('emptyState');
+            
+            const filtered = knowledgeList.filter(matchesFilter);
+            
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+            
+            emptyState.style.display = 'none';
+            grid.innerHTML = filtered.map(item => createCardHTML(item)).join('');
+        }
+
+        function createCardHTML(item) {
+            const difficultyLabels = {
+                beginner: '初级',
+                intermediate: '中级',
+                advanced: '高级'
+            };
+            
+            const tagsHTML = item.tags.map(tag => `<span class="tag">${tag}</span>`).join('');
+            
+            return `
+                <article class="card" data-id="${item.id}" onclick="toggleCard('${item.id}')">
+                    <div class="card-header">
+                        <h3 class="card-title">${escapeHtml(item.title)}</h3>
+                        <span class="card-difficulty difficulty-${item.difficulty}">
+                            ${difficultyLabels[item.difficulty]}
+                        </span>
+                    </div>
+                    <div class="card-tags">${tagsHTML}</div>
+                    <p class="card-preview">${escapeHtml(item.explanation)}</p>
+                    
+                    <div class="card-details">
+                        <div class="detail-section">
+                            <div class="detail-label">📖 解释</div>
+                            <div class="detail-content">${escapeHtml(item.explanation)}</div>
+                        </div>
+                        
+                        ${item.code ? `
+                        <div class="detail-section">
+                            <div class="detail-label">💻 代码示例</div>
+                            <pre class="code-block">${escapeHtml(item.code)}</pre>
+                        </div>
+                        ` : ''}
+                        
+                        ${item.extension ? `
+                        <div class="detail-section">
+                            <div class="detail-label">🚀 拓展</div>
+                            <div class="detail-content">${escapeHtml(item.extension)}</div>
+                        </div>
+                        ` : ''}
+                        
+                        <div class="card-actions" onclick="event.stopPropagation()">
+                            <button class="card-btn edit" onclick="editItem('${item.id}')">✏️ 编辑</button>
+                            <button class="card-btn delete" onclick="deleteItem('${item.id}')">🗑️ 删除</button>
+                        </div>
+                    </div>
+                </article>
+            `;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function toggleCard(id) {
+            const card = document.querySelector(`.card[data-id="${id}"]`);
+            card.classList.toggle('expanded');
+        }
+
+        /* ========== 模态弹窗 ========== */
+        function openModal(id = null) {
+            editingId = id;
+            const overlay = document.getElementById('modalOverlay');
+            const title = document.getElementById('modalTitle');
+            
+            if (id) {
+                const item = knowledgeList.find(k => k.id === id);
+                if (item) {
+                    title.textContent = '编辑知识点';
+                    document.getElementById('titleInput').value = item.title;
+                    document.getElementById('explanationInput').value = item.explanation;
+                    document.getElementById('codeInput').value = item.code || '';
+                    document.getElementById('extensionInput').value = item.extension || '';
+                    document.getElementById('difficultyInput').value = item.difficulty;
+                    document.getElementById('tagsInput').value = item.tags.join(', ');
+                }
+            } else {
+                title.textContent = '添加知识点';
+                document.getElementById('knowledgeForm').reset();
+            }
+            
+            overlay.classList.add('show');
+            document.getElementById('titleInput').focus();
+        }
+
+        function closeModal() {
+            const overlay = document.getElementById('modalOverlay');
+            overlay.classList.remove('show');
+            editingId = null;
+            clearErrors();
+        }
+
+        function handleOverlayClick(event) {
+            if (event.target === event.currentTarget) {
+                closeModal();
+            }
+        }
+
+        function clearErrors() {
+            document.getElementById('titleError').textContent = '';
+            document.getElementById('explanationError').textContent = '';
+            document.querySelectorAll('.form-input, .form-textarea').forEach(el => {
+                el.classList.remove('error');
+            });
+        }
+
+        /* ========== 表单提交 ========== */
+        function handleSubmit(event) {
+            event.preventDefault();
+            clearErrors();
+            
+            const title = document.getElementById('titleInput').value.trim();
+            const explanation = document.getElementById('explanationInput').value.trim();
+            const code = document.getElementById('codeInput').value.trim();
+            const extension = document.getElementById('extensionInput').value.trim();
+            const difficulty = document.getElementById('difficultyInput').value;
+            const tagsInput = document.getElementById('tagsInput').value.trim();
+            
+            // 验证
+            let hasError = false;
+            
+            if (!title) {
+                document.getElementById('titleError').textContent = '题目不能为空';
+                document.getElementById('titleInput').classList.add('error');
+                hasError = true;
+            }
+            
+            if (!explanation) {
+                document.getElementById('explanationError').textContent = '解释不能为空';
+                document.getElementById('explanationInput').classList.add('error');
+                hasError = true;
+            }
+            
+            if (hasError) return;
+            
+            // 处理标签
+            const tags = tagsInput 
+                ? tagsInput.split(/[,，]/).map(t => t.trim()).filter(t => t)
+                : [];
+            
+            const item = {
+                id: editingId || generateId(),
+                title,
+                explanation,
+                code,
+                extension,
+                difficulty,
+                tags
+            };
+            
+            if (editingId) {
+                const index = knowledgeList.findIndex(k => k.id === editingId);
+                if (index !== -1) {
+                    knowledgeList[index] = item;
+                }
+            } else {
+                knowledgeList.unshift(item);
+            }
+            
+            saveKnowledge();
+            renderCards();
+            closeModal();
+        }
+
+        /* ========== 编辑和删除 ========== */
+        function editItem(id) {
+            openModal(id);
+        }
+
+        function deleteItem(id) {
+            const item = knowledgeList.find(k => k.id === id);
+            if (!item) return;
+            
+            const confirmed = confirm(`确定要删除知识点"${item.title}"吗？此操作不可撤销。`);
+            
+            if (confirmed) {
+                knowledgeList = knowledgeList.filter(k => k.id !== id);
+                saveKnowledge();
+                renderCards();
+            }
+        }
+
+        /* ========== 重置数据 ========== */
+        function resetData() {
+            const confirmed = confirm('确定要重置为默认数据吗？当前所有数据将被覆盖。');
+            
+            if (confirmed) {
+                knowledgeList = JSON.parse(JSON.stringify(DEFAULT_KNOWLEDGE));
+                saveKnowledge();
+                renderCards();
+                
+                // 重置筛选器
+                currentDifficulty = 'all';
+                searchTerm = '';
+                document.getElementById('searchInput').value = '';
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.difficulty === 'all');
+                });
+            }
+        }
+
+        /* ========== 统计信息 ========== */
+        function updateStats() {
+            const stats = document.getElementById('stats');
+            const total = knowledgeList.length;
+            const beginner = knowledgeList.filter(k => k.difficulty === 'beginner').length;
+            const intermediate = knowledgeList.filter(k => k.difficulty === 'intermediate').length;
+            const advanced = knowledgeList.filter(k => k.difficulty === 'advanced').length;
+            
+            stats.textContent = `总计 ${total} 个知识点 | 初级 ${beginner} | 中级 ${intermediate} | 高级 ${advanced}`;
+        }
+
+        // 初始化统计
+        updateStats();
+
+        /* ========== 键盘快捷键 ========== */
+        document.addEventListener('keydown', (e) => {
+            // ESC 关闭模态框
+            if (e.key === 'Escape') {
+                closeModal();
+                closeImportModal();
+            }
+            
+            // Ctrl+N 新建
+            if (e.ctrlKey && e.key === 'n') {
+                e.preventDefault();
+                openModal();
+            }
+            
+            // Ctrl+F 聚焦搜索
+            if (e.ctrlKey && e.key === 'f') {
+                e.preventDefault();
+                document.getElementById('searchInput').focus();
+            }
+        });
+    </script>
+</body>
+</html>
