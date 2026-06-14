@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="C# 知识复习卡片应用">
+    <meta name="description" content="C# 知识复习卡片应用 - 支持测验模式">
     <title>C# 复习</title>
     
     <style>
         /* ========== CSS 变量定义 ========== */
         :root {
-            /* 浅色主题 */
             --bg-primary: #f5f7fa;
             --bg-secondary: #ffffff;
             --bg-card: #ffffff;
@@ -43,11 +42,7 @@
         }
 
         /* ========== 全局样式 ========== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -61,9 +56,7 @@
         /* ========== 导航栏 ========== */
         .navbar {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
+            top: 0; left: 0; right: 0;
             background: var(--bg-secondary);
             padding: 12px 20px;
             display: flex;
@@ -74,23 +67,10 @@
             border-bottom: 1px solid var(--border);
         }
 
-        .logo {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: var(--accent);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+        .logo { font-size: 1.3rem; font-weight: 700; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+        .logo-icon { font-size: 1.5rem; }
 
-        .logo-icon {
-            font-size: 1.5rem;
-        }
-
-        .nav-buttons {
-            display: flex;
-            gap: 8px;
-        }
+        .nav-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
 
         .nav-btn {
             background: var(--accent);
@@ -104,33 +84,40 @@
             transition: all 0.2s;
         }
 
-        .nav-btn:hover {
-            background: var(--accent-hover);
-            transform: translateY(-1px);
-        }
+        .nav-btn:hover { background: var(--accent-hover); transform: translateY(-1px); }
+        .nav-btn:active { transform: scale(0.95); }
+        .nav-btn.secondary { background: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border); }
+        .nav-btn.danger { background: var(--danger); }
+        .nav-btn.active { background: var(--accent); box-shadow: 0 0 0 2px white, 0 0 0 4px var(--accent); }
 
-        .nav-btn:active {
-            transform: scale(0.95);
-        }
-
-        .nav-btn.secondary {
+        /* ========== 模式切换按钮 ========== */
+        .mode-switch {
+            display: flex;
             background: var(--bg-primary);
-            color: var(--text-primary);
-            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 4px;
+            gap: 4px;
         }
 
-        .nav-btn.danger {
-            background: var(--danger);
+        .mode-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            background: transparent;
+            color: var(--text-secondary);
         }
+
+        .mode-btn:hover { background: var(--bg-secondary); }
+        .mode-btn.active { background: var(--accent); color: white; }
 
         /* ========== 主容器 ========== */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 80px 20px 40px;
-        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 80px 20px 40px; }
 
-        /* ========== 搜索和筛选区域 ========== */
+        /* ========== 复习模式样式 ========== */
         .filters {
             background: var(--bg-secondary);
             padding: 20px;
@@ -151,16 +138,9 @@
             transition: border-color 0.2s;
         }
 
-        .search-box:focus {
-            outline: none;
-            border-color: var(--accent);
-        }
+        .search-box:focus { outline: none; border-color: var(--accent); }
 
-        .filter-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
+        .filter-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
 
         .filter-btn {
             padding: 8px 16px;
@@ -174,31 +154,12 @@
             transition: all 0.2s;
         }
 
-        .filter-btn:hover {
-            border-color: var(--accent);
-            color: var(--accent);
-        }
+        .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .filter-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
 
-        .filter-btn.active {
-            background: var(--accent);
-            color: white;
-            border-color: var(--accent);
-        }
+        .cards-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        @media (min-width: 768px) { .cards-grid { grid-template-columns: repeat(2, 1fr); } }
 
-        /* ========== 卡片网格 ========== */
-        .cards-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 20px;
-        }
-
-        @media (min-width: 768px) {
-            .cards-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        /* ========== 知识点卡片 ========== */
         .card {
             background: var(--bg-card);
             border-radius: 12px;
@@ -209,25 +170,10 @@
             transition: all 0.3s;
         }
 
-        .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 20px var(--shadow);
-        }
+        .card:hover { transform: translateY(-2px); box-shadow: 0 4px 20px var(--shadow); }
 
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 12px;
-        }
-
-        .card-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            flex: 1;
-        }
-
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        .card-title { font-size: 1.1rem; font-weight: 600; color: var(--text-primary); flex: 1; }
         .card-difficulty {
             padding: 4px 10px;
             border-radius: 12px;
@@ -242,66 +188,20 @@
         .difficulty-intermediate { background: var(--difficulty-intermediate); }
         .difficulty-advanced { background: var(--difficulty-advanced); }
 
-        .card-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-bottom: 12px;
-        }
+        .card-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+        .tag { background: var(--tag-bg); color: var(--accent); padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; }
 
-        .tag {
-            background: var(--tag-bg);
-            color: var(--accent);
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 0.8rem;
-        }
+        .card-preview { color: var(--text-secondary); font-size: 0.95rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .card.expanded .card-preview { display: none; }
 
-        .card-preview {
-            color: var(--text-secondary);
-            font-size: 0.95rem;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
+        .card-details { display: none; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+        .card.expanded .card-details { display: block; animation: fadeIn 0.3s; }
 
-        .card.expanded .card-preview {
-            display: none;
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .card-details {
-            display: none;
-            margin-top: 16px;
-            padding-top: 16px;
-            border-top: 1px solid var(--border);
-        }
-
-        .card.expanded .card-details {
-            display: block;
-            animation: fadeIn 0.3s;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .detail-section {
-            margin-bottom: 16px;
-        }
-
-        .detail-label {
-            font-weight: 600;
-            color: var(--accent);
-            margin-bottom: 8px;
-            font-size: 0.9rem;
-        }
-
-        .detail-content {
-            color: var(--text-secondary);
-            font-size: 0.95rem;
-        }
+        .detail-section { margin-bottom: 16px; }
+        .detail-label { font-weight: 600; color: var(--accent); margin-bottom: 8px; font-size: 0.9rem; }
+        .detail-content { color: var(--text-secondary); font-size: 0.95rem; }
 
         .code-block {
             background: var(--code-bg);
@@ -315,47 +215,265 @@
             word-break: break-all;
         }
 
-        .card-actions {
-            display: flex;
-            gap: 8px;
-            margin-top: 16px;
-            padding-top: 16px;
-            border-top: 1px solid var(--border);
+        .card-actions { display: flex; gap: 8px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+        .card-btn { flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 500; transition: all 0.2s; }
+        .card-btn:active { transform: scale(0.95); }
+        .card-btn.edit { background: var(--accent); color: white; }
+        .card-btn.delete { background: var(--danger); color: white; }
+
+        /* ========== 测验模式样式 ========== */
+        .quiz-container { max-width: 700px; margin: 0 auto; }
+
+        .quiz-setup {
+            background: var(--bg-secondary);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px var(--shadow);
+            text-align: center;
         }
 
-        .card-btn {
+        .quiz-setup h2 { font-size: 1.5rem; margin-bottom: 10px; color: var(--accent); }
+        .quiz-setup p { color: var(--text-secondary); margin-bottom: 24px; }
+
+        .quiz-options { display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; }
+        .quiz-option { display: flex; align-items: center; gap: 12px; }
+        .quiz-option label { font-weight: 500; min-width: 100px; }
+        .quiz-option input[type="number"] {
             flex: 1;
-            padding: 10px;
-            border: none;
+            padding: 10px 14px;
+            border: 2px solid var(--border);
             border-radius: 8px;
+            font-size: 1rem;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .quiz-type-selector { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 24px; }
+        .quiz-type-btn {
+            padding: 10px 20px;
+            border: 2px solid var(--border);
+            border-radius: 20px;
+            background: var(--bg-primary);
+            color: var(--text-secondary);
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             font-weight: 500;
             transition: all 0.2s;
         }
 
-        .card-btn:active {
-            transform: scale(0.95);
+        .quiz-type-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .quiz-type-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+        .start-quiz-btn {
+            background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+            color: white;
+            border: none;
+            padding: 14px 40px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
         }
 
-        .card-btn.edit {
+        .start-quiz-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4); }
+
+        /* ========== 测验进行中 ========== */
+        .quiz-progress {
+            background: var(--bg-secondary);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px var(--shadow);
+        }
+
+        .progress-bar-container { background: var(--bg-primary); border-radius: 10px; height: 10px; overflow: hidden; margin-bottom: 12px; }
+        .progress-bar { background: linear-gradient(90deg, var(--accent), var(--success)); height: 100%; border-radius: 10px; transition: width 0.3s; }
+
+        .progress-text { display: flex; justify-content: space-between; font-size: 0.9rem; color: var(--text-secondary); }
+        .progress-text span { display: flex; align-items: center; gap: 4px; }
+
+        .quiz-card {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 20px var(--shadow);
+            margin-bottom: 20px;
+        }
+
+        .question-type {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .question-type.choice { background: var(--accent); color: white; }
+        .question-type.judge { background: var(--warning); color: white; }
+        .question-type.fill { background: var(--success); color: white; }
+
+        .question-text {
+            font-size: 1.2rem;
+            font-weight: 500;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        .options-list { display: flex; flex-direction: column; gap: 12px; }
+
+        .option-item {
+            padding: 16px 20px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--bg-primary);
+        }
+
+        .option-item:hover:not(.disabled) { border-color: var(--accent); background: var(--bg-secondary); }
+        .option-item.selected { border-color: var(--accent); background: rgba(52, 152, 219, 0.1); }
+        .option-item.correct { border-color: var(--success); background: rgba(39, 174, 96, 0.1); }
+        .option-item.incorrect { border-color: var(--danger); background: rgba(231, 76, 60, 0.1); }
+        .option-item.disabled { cursor: default; opacity: 0.7; }
+
+        .option-letter {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--bg-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .option-item.correct .option-letter { background: var(--success); color: white; }
+        .option-item.incorrect .option-letter { background: var(--danger); color: white; }
+
+        .option-text { flex: 1; }
+
+        /* ========== 答案解析 ========== */
+        .answer-feedback {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            border-left: 4px solid;
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .answer-feedback.correct { border-color: var(--success); }
+        .answer-feedback.incorrect { border-color: var(--danger); }
+
+        .feedback-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; font-weight: 600; font-size: 1.1rem; }
+        .feedback-header.correct { color: var(--success); }
+        .feedback-header.incorrect { color: var(--danger); }
+
+        .analysis-card {
+            background: var(--bg-primary);
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+
+        .analysis-card h4 { color: var(--accent); margin-bottom: 8px; font-size: 0.95rem; }
+        .analysis-card p { color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 8px; }
+        .analysis-card pre { margin-top: 8px; }
+
+        .next-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 20px;
             background: var(--accent);
             color: white;
         }
 
-        .card-btn.delete {
-            background: var(--danger);
-            color: white;
+        .next-btn:hover { background: var(--accent-hover); }
+
+        /* ========== 测验结果 ========== */
+        .quiz-result {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 4px 20px var(--shadow);
+            text-align: center;
         }
+
+        .result-icon { font-size: 5rem; margin-bottom: 20px; }
+        .result-title { font-size: 1.8rem; font-weight: 700; margin-bottom: 10px; }
+        .result-subtitle { color: var(--text-secondary); margin-bottom: 30px; }
+
+        .score-display {
+            background: var(--bg-primary);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .score-number { font-size: 4rem; font-weight: 700; color: var(--accent); line-height: 1; }
+        .score-label { color: var(--text-secondary); margin-top: 8px; }
+
+        .score-stats { display: flex; justify-content: center; gap: 30px; margin-top: 20px; }
+        .score-stat { text-align: center; }
+        .score-stat-value { font-size: 1.5rem; font-weight: 600; }
+        .score-stat-label { font-size: 0.85rem; color: var(--text-secondary); }
+        .score-stat.correct .score-stat-value { color: var(--success); }
+        .score-stat.incorrect .score-stat-value { color: var(--danger); }
+
+        .wrong-questions { margin-top: 30px; text-align: left; }
+        .wrong-questions h3 { margin-bottom: 16px; color: var(--danger); font-size: 1.2rem; }
+
+        .wrong-question-item {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .wrong-question-item:hover { transform: translateX(4px); }
+        .wrong-question-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .wrong-question-title { font-weight: 500; }
+        .wrong-question-answer { font-size: 0.9rem; color: var(--text-secondary); }
+
+        .result-actions { display: flex; gap: 12px; margin-top: 30px; }
+        .result-btn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .result-btn.primary { background: var(--accent); color: white; }
+        .result-btn.secondary { background: var(--bg-primary); color: var(--text-primary); border: 2px solid var(--border); }
+        .result-btn:hover { transform: translateY(-2px); }
 
         /* ========== 模态弹窗 ========== */
         .modal-overlay {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0, 0, 0, 0.5);
             z-index: 200;
             justify-content: center;
@@ -363,10 +481,7 @@
             padding: 20px;
         }
 
-        .modal-overlay.show {
-            display: flex;
-            animation: fadeIn 0.2s;
-        }
+        .modal-overlay.show { display: flex; animation: fadeIn 0.2s; }
 
         .modal {
             background: var(--bg-secondary);
@@ -378,50 +493,17 @@
             padding: 24px;
         }
 
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .modal-title {
-            font-size: 1.3rem;
-            font-weight: 600;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: var(--text-secondary);
-            padding: 4px;
-        }
-
-        .modal-close:hover {
-            color: var(--danger);
-        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-title { font-size: 1.3rem; font-weight: 600; }
+        .modal-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary); padding: 4px; }
+        .modal-close:hover { color: var(--danger); }
 
         /* ========== 表单 ========== */
-        .form-group {
-            margin-bottom: 16px;
-        }
+        .form-group { margin-bottom: 16px; }
+        .form-label { display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-primary); }
+        .form-label .required { color: var(--danger); }
 
-        .form-label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 500;
-            color: var(--text-primary);
-        }
-
-        .form-label .required {
-            color: var(--danger);
-        }
-
-        .form-input,
-        .form-textarea,
-        .form-select {
+        .form-input, .form-textarea, .form-select {
             width: 100%;
             padding: 10px 14px;
             border: 2px solid var(--border);
@@ -432,117 +514,35 @@
             transition: border-color 0.2s;
         }
 
-        .form-input:focus,
-        .form-textarea:focus,
-        .form-select:focus {
-            outline: none;
-            border-color: var(--accent);
-        }
+        .form-input:focus, .form-textarea:focus, .form-select:focus { outline: none; border-color: var(--accent); }
+        .form-textarea { min-height: 100px; resize: vertical; }
+        .form-input.error, .form-textarea.error { border-color: var(--danger); }
+        .form-error { color: var(--danger); font-size: 0.85rem; margin-top: 4px; }
+        .form-hint { color: var(--text-secondary); font-size: 0.85rem; margin-top: 4px; }
 
-        .form-textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-
-        .form-input.error {
-            border-color: var(--danger);
-        }
-
-        .form-error {
-            color: var(--danger);
-            font-size: 0.85rem;
-            margin-top: 4px;
-        }
-
-        .form-hint {
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-            margin-top: 4px;
-        }
-
-        .form-actions {
-            display: flex;
-            gap: 12px;
-            margin-top: 24px;
-        }
-
-        .form-btn {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .form-btn:active {
-            transform: scale(0.98);
-        }
-
-        .form-btn.submit {
-            background: var(--success);
-            color: white;
-        }
-
-        .form-btn.cancel {
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            border: 2px solid var(--border);
-        }
+        .form-actions { display: flex; gap: 12px; margin-top: 24px; }
+        .form-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .form-btn:active { transform: scale(0.98); }
+        .form-btn.submit { background: var(--success); color: white; }
+        .form-btn.cancel { background: var(--bg-primary); color: var(--text-primary); border: 2px solid var(--border); }
 
         /* ========== 空状态 ========== */
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: var(--text-secondary);
-        }
+        .empty-state { text-align: center; padding: 60px 20px; color: var(--text-secondary); }
+        .empty-icon { font-size: 4rem; margin-bottom: 20px; }
+        .empty-text { font-size: 1.1rem; margin-bottom: 20px; }
 
-        .empty-icon {
-            font-size: 4rem;
-            margin-bottom: 20px;
-        }
+        .stats { text-align: center; padding: 12px; color: var(--text-secondary); font-size: 0.9rem; }
 
-        .empty-text {
-            font-size: 1.1rem;
-            margin-bottom: 20px;
-        }
+        /* ========== 隐藏元素 ========== */
+        .hidden { display: none !important; }
 
-        /* ========== 统计信息 ========== */
-        .stats {
-            text-align: center;
-            padding: 12px;
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-        }
-
-        /* ========== 触摸反馈 ========== */
-        @media (hover: none) {
-            .card:active,
-            .nav-btn:active,
-            .card-btn:active,
-            .form-btn:active {
-                transform: scale(0.95);
-            }
-        }
-
-        /* ========== 滚动条 ========== */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: var(--bg-primary);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--border);
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--text-secondary);
+        /* ========== 响应式 ========== */
+        @media (max-width: 768px) {
+            .navbar { padding: 10px 12px; }
+            .nav-btn { padding: 6px 12px; font-size: 0.85rem; }
+            .mode-btn { padding: 6px 12px; font-size: 0.85rem; }
+            .quiz-card, .quiz-result { padding: 20px; }
+            .score-stats { flex-direction: column; gap: 15px; }
         }
     </style>
 </head>
@@ -554,46 +554,118 @@
             <span>C# 复习</span>
         </div>
         <div class="nav-buttons">
-            <button class="nav-btn" onclick="openModal()" title="添加新知识点">➕ 添加</button>
-            <button class="nav-btn secondary" onclick="document.getElementById('importInput').click()" title="导入数据">📥 导入</button>
-            <button class="nav-btn secondary" onclick="exportData()" title="导出数据">📤 导出</button>
-            <button class="nav-btn secondary" onclick="toggleTheme()" id="themeBtn" title="切换主题">🌙</button>
-            <button class="nav-btn danger" onclick="resetData()" title="重置为默认数据">🔄 重置</button>
+            <!-- 模式切换 -->
+            <div class="mode-switch">
+                <button class="mode-btn active" data-mode="review" onclick="switchMode('review')">📖 复习模式</button>
+                <button class="mode-btn" data-mode="quiz" onclick="switchMode('quiz')">✏️ 测验模式</button>
+            </div>
         </div>
-        <!-- 隐藏的文件输入框 -->
-        <input type="file" id="importInput" accept=".json" style="display: none;" onchange="handleImport(event)">
     </nav>
 
     <!-- ========== 主容器 ========== -->
     <main class="container">
-        <!-- ========== 搜索和筛选 ========== -->
-        <div class="filters">
-            <input 
-                type="text" 
-                class="search-box" 
-                id="searchInput" 
-                placeholder="🔍 搜索题目或解释..."
-                oninput="filterCards()"
-            >
-            <div class="filter-buttons">
-                <button class="filter-btn active" data-difficulty="all" onclick="setDifficultyFilter('all')">全部</button>
-                <button class="filter-btn" data-difficulty="beginner" onclick="setDifficultyFilter('beginner')">🟢 初级</button>
-                <button class="filter-btn" data-difficulty="intermediate" onclick="setDifficultyFilter('intermediate')">🟡 中级</button>
-                <button class="filter-btn" data-difficulty="advanced" onclick="setDifficultyFilter('advanced')">🔴 高级</button>
+        <!-- ========== 复习模式 ========== -->
+        <div id="reviewMode">
+            <div class="filters">
+                <input type="text" class="search-box" id="searchInput" placeholder="🔍 搜索题目或解释..." oninput="filterCards()">
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-difficulty="all" onclick="setDifficultyFilter('all')">全部</button>
+                    <button class="filter-btn" data-difficulty="beginner" onclick="setDifficultyFilter('beginner')">🟢 初级</button>
+                    <button class="filter-btn" data-difficulty="intermediate" onclick="setDifficultyFilter('intermediate')">🟡 中级</button>
+                    <button class="filter-btn" data-difficulty="advanced" onclick="setDifficultyFilter('advanced')">🔴 高级</button>
+                </div>
+            </div>
+
+            <div class="stats" id="stats"></div>
+            <div class="cards-grid" id="cardsGrid"></div>
+            <div class="empty-state" id="emptyState" style="display: none;">
+                <div class="empty-icon">📝</div>
+                <p class="empty-text">暂无知识点</p>
+                <button class="nav-btn" onclick="openModal()">➕ 添加第一个知识点</button>
             </div>
         </div>
 
-        <!-- ========== 统计信息 ========== -->
-        <div class="stats" id="stats"></div>
+        <!-- ========== 测验模式 ========== -->
+        <div id="quizMode" class="hidden">
+            <!-- 测验设置 -->
+            <div class="quiz-container" id="quizSetup">
+                <div class="quiz-setup">
+                    <h2>✏️ C# 知识测验</h2>
+                    <p id="quizInfo">准备好测试您的 C# 知识了吗？</p>
+                    
+                    <div class="quiz-options">
+                        <div class="quiz-option">
+                            <label>题目数量</label>
+                            <input type="number" id="questionCount" min="1" max="50" value="10">
+                        </div>
+                    </div>
 
-        <!-- ========== 卡片网格 ========== -->
-        <div class="cards-grid" id="cardsGrid"></div>
+                    <div class="quiz-type-selector">
+                        <button class="quiz-type-btn active" data-type="all" onclick="selectQuizType('all')">📝 全部题型</button>
+                        <button class="quiz-type-btn" data-type="choice" onclick="selectQuizType('choice')">🔘 选择题</button>
+                        <button class="quiz-type-btn" data-type="judge" onclick="selectQuizType('judge')">✓ 判断题</button>
+                        <button class="quiz-type-btn" data-type="fill" onclick="selectQuizType('fill')">💻 代码填空</button>
+                    </div>
 
-        <!-- ========== 空状态 ========== -->
-        <div class="empty-state" id="emptyState" style="display: none;">
-            <div class="empty-icon">📝</div>
-            <p class="empty-text">暂无知识点</p>
-            <button class="nav-btn" onclick="openModal()">➕ 添加第一个知识点</button>
+                    <button class="start-quiz-btn" onclick="startQuiz()">🚀 开始测验</button>
+                </div>
+            </div>
+
+            <!-- 测验进行中 -->
+            <div class="quiz-container hidden" id="quizInProgress">
+                <div class="quiz-progress">
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+                    </div>
+                    <div class="progress-text">
+                        <span>📝 第 <span id="currentQ">1</span> / <span id="totalQ">10</span> 题</span>
+                        <span>✅ 正确: <span id="correctCount">0</span> | ❌ 错误: <span id="wrongCount">0</span></span>
+                    </div>
+                </div>
+
+                <div class="quiz-card">
+                    <span class="question-type" id="questionType"></span>
+                    <div class="question-text" id="questionText"></div>
+                    <div class="options-list" id="optionsList"></div>
+                </div>
+
+                <div class="answer-feedback hidden" id="answerFeedback">
+                    <div class="feedback-header" id="feedbackHeader"></div>
+                    <div id="feedbackContent"></div>
+                    <button class="next-btn" id="nextBtn" onclick="nextQuestion()">下一题 →</button>
+                </div>
+            </div>
+
+            <!-- 测验结果 -->
+            <div class="quiz-container hidden" id="quizResult">
+                <div class="quiz-result">
+                    <div class="result-icon" id="resultIcon">🎉</div>
+                    <h2 class="result-title" id="resultTitle">测验完成！</h2>
+                    <p class="result-subtitle" id="resultSubtitle">您已完成本次测验</p>
+
+                    <div class="score-display">
+                        <div class="score-number" id="scoreNumber">0</div>
+                        <div class="score-label">正确率</div>
+                        <div class="score-stats">
+                            <div class="score-stat correct">
+                                <div class="score-stat-value" id="finalCorrect">0</div>
+                                <div class="score-stat-label">正确</div>
+                            </div>
+                            <div class="score-stat incorrect">
+                                <div class="score-stat-value" id="finalWrong">0</div>
+                                <div class="score-stat-label">错误</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="wrong-questions" id="wrongQuestions"></div>
+
+                    <div class="result-actions">
+                        <button class="result-btn secondary" onclick="switchMode('review')">📖 返回复习</button>
+                        <button class="result-btn primary" onclick="restartQuiz()">🔄 重新测验</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -606,58 +678,29 @@
             </div>
             
             <form id="knowledgeForm" onsubmit="handleSubmit(event)">
-                <!-- 题目 -->
                 <div class="form-group">
-                    <label class="form-label">
-                        题目 <span class="required">*</span>
-                    </label>
-                    <input 
-                        type="text" 
-                        class="form-input" 
-                        id="titleInput" 
-                        placeholder="例如：C# 中的委托是什么？"
-                        required
-                    >
+                    <label class="form-label">题目 <span class="required">*</span></label>
+                    <input type="text" class="form-input" id="titleInput" placeholder="例如：C# 中的委托是什么？" required>
                     <div class="form-error" id="titleError"></div>
                 </div>
 
-                <!-- 解释 -->
                 <div class="form-group">
-                    <label class="form-label">
-                        解释 <span class="required">*</span>
-                    </label>
-                    <textarea 
-                        class="form-textarea" 
-                        id="explanationInput" 
-                        placeholder="详细解释这个概念..."
-                        required
-                    ></textarea>
+                    <label class="form-label">解释 <span class="required">*</span></label>
+                    <textarea class="form-textarea" id="explanationInput" placeholder="详细解释这个概念..." required></textarea>
                     <div class="form-error" id="explanationError"></div>
                 </div>
 
-                <!-- 代码 -->
                 <div class="form-group">
                     <label class="form-label">代码示例</label>
-                    <textarea 
-                        class="form-textarea code-block" 
-                        id="codeInput" 
-                        placeholder="// 在此输入代码示例..."
-                        style="min-height: 150px;"
-                    ></textarea>
+                    <textarea class="form-textarea code-block" id="codeInput" placeholder="// 在此输入代码示例..." style="min-height: 150px;"></textarea>
                     <div class="form-hint">建议填写代码示例以加深理解</div>
                 </div>
 
-                <!-- 拓展 -->
                 <div class="form-group">
                     <label class="form-label">拓展说明</label>
-                    <textarea 
-                        class="form-textarea" 
-                        id="extensionInput" 
-                        placeholder="相关知识点、实际应用场景等..."
-                    ></textarea>
+                    <textarea class="form-textarea" id="extensionInput" placeholder="相关知识点、实际应用场景等..."></textarea>
                 </div>
 
-                <!-- 难度 -->
                 <div class="form-group">
                     <label class="form-label">难度</label>
                     <select class="form-select" id="difficultyInput">
@@ -667,19 +710,12 @@
                     </select>
                 </div>
 
-                <!-- 标签 -->
                 <div class="form-group">
                     <label class="form-label">标签</label>
-                    <input 
-                        type="text" 
-                        class="form-input" 
-                        id="tagsInput" 
-                        placeholder="委托, 事件, 基础 (用逗号分隔)"
-                    >
+                    <input type="text" class="form-input" id="tagsInput" placeholder="委托, 事件, 基础 (用逗号分隔)">
                     <div class="form-hint">多个标签用逗号分隔</div>
                 </div>
 
-                <!-- 按钮 -->
                 <div class="form-actions">
                     <button type="button" class="form-btn cancel" onclick="closeModal()">取消</button>
                     <button type="submit" class="form-btn submit">保存</button>
@@ -700,226 +736,147 @@
             </div>
             <div class="form-actions">
                 <button type="button" class="form-btn cancel" onclick="closeImportModal()">取消</button>
-                <button type="button" class="form-btn" style="background: var(--warning); color: white;" onclick="importWithMerge()">🔗 合并现有数据</button>
-                <button type="button" class="form-btn submit" onclick="importWithReplace()">🔄 替换全部</button>
+                <button type="button" class="form-btn" style="background: var(--warning); color: white;" onclick="importWithMerge()">🔗 合并</button>
+                <button type="button" class="form-btn submit" onclick="importWithReplace()">🔄 替换</button>
             </div>
         </div>
     </div>
 
+    <input type="file" id="importInput" accept=".json" style="display: none;" onchange="handleImport(event)">
+
     <script>
-        /* ========== 默认知识点数据 ========== */
+        /* ========== 默认知识点数据（C#异步编程示例） ========== */
         const DEFAULT_KNOWLEDGE = [
             {
-                id: generateId(),
-                title: '什么是委托（Delegate）？',
-                explanation: '委托是一种类型安全的函数指针，它封装了具有特定返回值和参数的方法。委托可以像其他类型一样被传递、组合和调用。',
-                code: `// 声明委托
-public delegate void MyDelegate(string message);
-
-// 定义与委托签名匹配的方法
-public void ShowMessage(string msg) {
-    Console.WriteLine(msg);
-}
-
-// 使用委托
-MyDelegate del = new MyDelegate(ShowMessage);
-del("Hello, Delegate!");`,
-                extension: '委托常用于事件处理、回调函数和异步编程。可以使用多播委托同时调用多个方法。',
-                difficulty: 'beginner',
-                tags: ['委托', '基础', '事件']
-            },
-            {
-                id: generateId(),
-                title: 'C# 泛型（Generics）是什么？',
-                explanation: '泛型允许你编写可重用的代码，同时保持类型安全。通过泛型，可以创建不指定具体类型的类、接口和方法，在使用时再指定具体类型。',
-                code: `// 泛型类
-public class Box<T> {
-    private T content;
-    public void Set(T value) => content = value;
-    public T Get() => content;
-}
-
-// 泛型方法
-public T Max<T>(T a, T b) where T : IComparable<T> {
-    return a.CompareTo(b) > 0 ? a : b;
-}
-
-// 使用
-var box = new Box<int>();
-box.Set(42);
-int value = box.Get();`,
-                extension: '泛型约束（where T : constraint）可以限制泛型类型必须满足的条件，如实现某个接口或继承某个类。',
-                difficulty: 'beginner',
-                tags: ['泛型', '集合', '类型安全']
-            },
-            {
-                id: generateId(),
-                title: 'async/await 异步编程',
-                explanation: 'async/await 是 C# 5.0 引入的异步编程关键字，让异步代码看起来像同步代码，提高了代码的可读性和可维护性。',
-                code: `// 异步方法定义
-public async Task<string> FetchDataAsync(string url) {
+                id: 'default-1',
+                title: 'async/await 异步关键字',
+                explanation: 'async/await 是 C# 5.0 引入的异步编程关键字。async 修饰符表示方法是异步的，await 用于等待异步操作完成。',
+                code: `public async Task<string> GetDataAsync() {
     using var client = new HttpClient();
     string result = await client.GetStringAsync(url);
     return result;
-}
-
-// 调用异步方法
-public async Task ProcessAsync() {
-    Console.WriteLine("开始下载...");
-    string data = await FetchDataAsync("https://api.example.com");
-    Console.WriteLine($"下载完成，长度: {data.Length}");
-}
-
-// 使用 ConfigureAwait 优化性能
-await SomeAsync().ConfigureAwait(false);`,
-                extension: '异步方法必须返回 Task 或 Task<T>。void 异步事件处理器例外。应尽量使用 ConfigureAwait(false) 以提高性能。',
-                difficulty: 'intermediate',
-                tags: ['异步', 'async', 'await', '并发']
-            },
-            {
-                id: generateId(),
-                title: 'LINQ 查询语法',
-                explanation: '语言集成查询（LINQ）提供了强大的数据查询能力，支持对集合、数据库、XML 等数据源进行统一查询。',
-                code: `// 查询语法
-var results = from person in people
-              where person.Age > 18
-              orderby person.Name
-              select person.Name;
-
-// 方法语法
-var names = people
-    .Where(p => p.Age > 18)
-    .OrderBy(p => p.Name)
-    .Select(p => p.Name);
-
-// 延迟执行示例
-var query = numbers.Where(n => n > 5); // 不执行
-numbers.Add(10);                       // 修改数据源
-foreach(var n in query) Console.WriteLine(n); // 现在才执行`,
-                extension: 'LINQ 支持两种语法：查询表达式和方法语法。查询语法会被编译器转换为方法语法。LINQ 使用延迟执行，只有在迭代时才真正执行查询。',
-                difficulty: 'intermediate',
-                tags: ['LINQ', '查询', '集合']
-            },
-            {
-                id: generateId(),
-                title: '什么是锁（lock）？',
-                explanation: 'lock 关键字用于确保代码块一次只能被一个线程执行，防止多线程竞争条件导致的并发问题。',
-                code: `private readonly object _lock = new object();
-private int _counter;
-
-// 安全的计数器递增
-public void Increment() {
-    lock (_lock) {
-        _counter++;
-        Console.WriteLine($"Counter: {_counter}");
-    }
-}
-
-// 更好的方式：使用 Interlocked
-public void IncrementBetter() {
-    Interlocked.Increment(ref _counter);
-}
-
-// 或使用 ReaderWriterLockSlim
-private static ReaderWriterLockSlim _rwLock = new ReaderWriterLockSlim();
-
-public void ReadData() {
-    _rwLock.EnterReadLock();
-    try {
-        // 读取操作
-    } finally {
-        _rwLock.ExitReadLock();
-    }
 }`,
-                extension: 'lock 实际上是 Monitor 的语法糖。应避免锁定 this、字符串或公共对象。使用 ReaderWriterLockSlim 可以提高读多写少场景的性能。',
+                extension: '异步方法必须返回 Task 或 Task<T>。使用 ConfigureAwait(false) 可提高性能。',
                 difficulty: 'intermediate',
-                tags: ['多线程', '并发', '锁']
+                tags: ['异步', 'async', 'await']
             },
             {
-                id: generateId(),
-                title: '表达式树（Expression Tree）',
-                explanation: '表达式树是以树形数据结构表示的代码，它们可以在运行时被分析、修改和执行。常用于 LINQ providers 和动态查询构建。',
-                code: `using System.Linq.Expressions;
+                id: 'default-2',
+                title: 'Task.Run 用于CPU密集型',
+                explanation: 'Task.Run 用于将 CPU 密集型工作移到线程池线程上执行，避免阻塞主线程。',
+                code: `// 将CPU密集型操作移到后台线程
+var result = await Task.Run(() => {
+    // 复杂计算
+    return ComputeHeavy(data);
+});`,
+                extension: '对于 I/O 密集型操作，使用 async/await 更高效；对于 CPU 密集型，使用 Task.Run。',
+                difficulty: 'intermediate',
+                tags: ['Task', '多线程', '后台']
+            },
+            {
+                id: 'default-3',
+                title: 'Task.WhenAll 并行执行多个任务',
+                explanation: 'Task.WhenAll 创建一个任务，该任务在所有提供的任务完成时完成，实现真正的并行执行。',
+                code: `var task1 = DownloadAsync(url1);
+var task2 = DownloadAsync(url2);
+var task3 = DownloadAsync(url3);
 
-// 创建表达式树
-Expression<Func<int, int, int>> expr = (a, b) => a + b;
+// 并行执行所有下载
+string[] results = await Task.WhenAll(task1, task2, task3);`,
+                extension: '使用 WhenAll 比顺序 await 更快，因为它同时启动所有任务。',
+                difficulty: 'intermediate',
+                tags: ['Task', '并行', '并发']
+            },
+            {
+                id: 'default-4',
+                title: 'CancellationToken 取消异步操作',
+                explanation: 'CancellationToken 用于请求取消异步操作。通过 CancellationTokenSource 创建和传播 token。',
+                code: ` CancellationTokenSource cts = new CancellationTokenSource();
 
-// 编译并执行
-var func = expr.Compile();
-Console.WriteLine(func(3, 4)); // 输出 7
+try {
+    var result = await LongRunningTaskAsync(cts.Token);
+} catch (OperationCanceledException) {
+    Console.WriteLine("操作已取消");
+}
 
-// 动态构建表达式
-ParameterExpression x = Expression.Parameter(typeof(int), "x");
-ParameterExpression y = Expression.Parameter(typeof(int), "y");
-Expression body = Expression.Add(x, y);
-var lambda = Expression.Lambda<Func<int, int, int>>(body, x, y);
-var compiled = lambda.Compile();
-Console.WriteLine(compiled(10, 20)); // 输出 30`,
-                extension: '表达式树是只读的，可以用于构建动态查询。Expression<Func<T>> 用于编译后执行，而 Action<T> 不可表示表达式树。',
+// 在其他线程取消
+cts.Cancel();`,
+                extension: '将 CancellationToken 作为参数传递给异步方法，在方法内定期检查 IsCancellationRequested。',
                 difficulty: 'advanced',
-                tags: ['表达式树', '动态编程', 'LINQ']
+                tags: ['取消', 'CancellationToken', '异步']
             },
             {
-                id: generateId(),
-                title: '依赖注入（Dependency Injection）',
-                explanation: '依赖注入是一种设计模式，通过构造函数或属性将依赖对象注入到类中，而不是在类内部创建。这提高了代码的可测试性和松耦合。',
-                code: `// 定义服务接口
-public interface IEmailService {
-    void Send(string to, string subject, string body);
-}
-
-// 实现服务
-public class EmailService : IEmailService {
-    public void Send(string to, string subject, string body) {
-        Console.WriteLine($"Sending email to {to}");
-    }
-}
-
-// 使用依赖注入的类
-public class UserController {
-    private readonly IEmailService _emailService;
-    
-    // 构造函数注入（推荐）
-    public UserController(IEmailService emailService) {
-        _emailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
-    }
-    
-    public void CreateUser(string email) {
-        // 业务逻辑
-        _emailService.Send(email, "Welcome", "Hello!");
-    }
+                id: 'default-5',
+                title: 'ConfigureAwait(false) 优化性能',
+                explanation: 'ConfigureAwait(false) 避免在原始上下文中继续执行，减少线程切换开销，提高库的性能。',
+                code: `public async Task<string> GetDataAsync() {
+    using var client = new HttpClient();
+    // 不捕获原始上下文
+    var html = await client.GetStringAsync(url)
+                           .ConfigureAwait(false);
+    // 后续代码在任意线程执行
+    return ProcessHtml(html);
 }`,
-                extension: '常见 DI 容器有 Microsoft.Extensions.DependencyInjection、Autofac、Ninject。ASP.NET Core 内置了 DI 容器。',
+                extension: '在库代码中使用 ConfigureAwait(false)，在应用代码中通常不需要。',
+                difficulty: 'advanced',
+                tags: ['性能', 'ConfigureAwait', '优化']
+            },
+            {
+                id: 'default-6',
+                title: 'ValueTask 减少 allocations',
+                explanation: 'ValueTask<T> 用于优化已知会同步完成的异步操作，减少 Task<T> 的内存分配。',
+                code: `// 立即完成的操作返回 ValueTask
+public ValueTask<int> GetCachedValueAsync() {
+    if (cache.ContainsKey(key)) {
+        // 同步完成，避免分配 Task
+        return new ValueTask<int>(cache[key]);
+    }
+    // 需要异步操作
+    return new ValueTask<int>(LoadValueAsync(key));
+}`,
+                extension: 'ValueTask 只能被 await 一次。不要在同步代码中直接访问 Result。',
+                difficulty: 'advanced',
+                tags: ['ValueTask', '性能', '内存']
+            },
+            {
+                id: 'default-7',
+                title: 'IAsyncEnumerable 异步流',
+                explanation: 'IAsyncEnumerable<T> (async yield) 允许异步生成数据流，类似同步的 yield return。',
+                code: `async IAsyncEnumerable<int> GenerateNumbersAsync() {
+    for (int i = 0; i < 10; i++) {
+        await Task.Delay(100); // 异步等待
+        yield return i; // 生成值
+    }
+}
+
+// 使用
+await foreach (var num in GenerateNumbersAsync()) {
+    Console.WriteLine(num);
+}`,
+                extension: '适用于处理大数据集或实时数据流，避免一次性加载所有数据到内存。',
+                difficulty: 'advanced',
+                tags: ['异步流', 'IAsyncEnumerable', 'yield']
+            },
+            {
+                id: 'default-8',
+                title: 'SemaphoreSlim 限制并发数',
+                explanation: 'SemaphoreSlim 用于限制同时执行的异步操作数量，防止资源耗尽。',
+                code: `var semaphore = new SemaphoreSlim(3); // 最多3个并发
+
+async Task ProcessItemsAsync(IEnumerable<Item> items) {
+    var tasks = items.Select(async item => {
+        await semaphore.WaitAsync();
+        try {
+            await ProcessAsync(item);
+        } finally {
+            semaphore.Release();
+        }
+    });
+    await Task.WhenAll(tasks);
+}`,
+                extension: '使用 SemaphoreSlim.WaitAsync() 而不是 Semaphore.Wait()，避免阻塞线程。',
                 difficulty: 'intermediate',
-                tags: ['设计模式', 'DI', '依赖注入', '架构']
-            },
-            {
-                id: generateId(),
-                title: '装箱与拆箱（Boxing/Unboxing）',
-                explanation: '装箱是将值类型转换为 object 或接口类型的过程，拆箱则是反向操作。装箱会创建堆上的对象，增加内存分配和垃圾回收开销。',
-                code: `int value = 123;
-object box = value;    // 装箱：值类型->引用类型
-int unboxed = (int)box; // 拆箱：引用类型->值类型
-
-// 性能问题示例
-List<object> list = new List<object>();
-for (int i = 0; i < 100000; i++) {
-    list.Add(i); // 每次都装箱，产生大量对象
-}
-
-// 正确做法：使用泛型集合
-List<int> genericList = new List<int>();
-for (int i = 0; i < 100000; i++) {
-    genericList.Add(i); // 无装箱，性能更好
-}
-
-// 使用泛型方法避免装箱
-void Print<T>(T value) where T : struct {
-    Console.WriteLine(value);
-}`,
-                extension: '可以通过 FCL（点NET 类库）中的大部分泛型集合避免装箱。struct 默认实现 IEquatable<T> 和 IComparable<T> 接口，避免装箱。',
-                difficulty: 'beginner',
-                tags: ['值类型', '引用类型', '性能', '内存']
+                tags: ['并发', 'Semaphore', '限制']
             }
         ];
 
@@ -928,13 +885,37 @@ void Print<T>(T value) where T : struct {
         let currentDifficulty = 'all';
         let searchTerm = '';
         let editingId = null;
+        let currentMode = 'review';
+        let selectedQuizType = 'all';
+
+        // 测验状态
+        let quizQuestions = [];
+        let currentQuestionIndex = 0;
+        let correctCount = 0;
+        let wrongQuestions = [];
 
         /* ========== 初始化 ========== */
         document.addEventListener('DOMContentLoaded', () => {
             loadTheme();
             loadKnowledge();
             renderCards();
+            updateQuizInfo();
         });
+
+        /* ========== 模式切换 ========== */
+        function switchMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.mode === mode);
+            });
+
+            document.getElementById('reviewMode').classList.toggle('hidden', mode !== 'review');
+            document.getElementById('quizMode').classList.toggle('hidden', mode !== 'quiz');
+
+            if (mode === 'quiz') {
+                resetQuiz();
+            }
+        }
 
         /* ========== ID 生成器 ========== */
         function generateId() {
@@ -945,6 +926,7 @@ void Print<T>(T value) where T : struct {
         function saveKnowledge() {
             localStorage.setItem('csharp-knowledge', JSON.stringify(knowledgeList));
             updateStats();
+            updateQuizInfo();
         }
 
         function loadKnowledge() {
@@ -961,7 +943,6 @@ void Print<T>(T value) where T : struct {
         function loadTheme() {
             const theme = localStorage.getItem('theme') || 'light';
             document.documentElement.setAttribute('data-theme', theme);
-            updateThemeButton();
         }
 
         function toggleTheme() {
@@ -969,139 +950,378 @@ void Print<T>(T value) where T : struct {
             const newTheme = current === 'dark' ? 'light' : 'dark';
             document.documentElement.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
-            updateThemeButton();
         }
 
-        function updateThemeButton() {
-            const theme = document.documentElement.getAttribute('data-theme');
-            document.getElementById('themeBtn').textContent = theme === 'dark' ? '☀️' : '🌙';
-        }
-
-        /* ========== 导入功能 ========== */
-        let pendingImportData = null;
-
-        function handleImport(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    
-                    // 验证数据格式
-                    if (!Array.isArray(data)) {
-                        alert('❌ 导入失败：文件格式不正确，需要 JSON 数组格式。');
-                        return;
-                    }
-
-                    // 验证每个知识点
-                    const validItems = data.filter(item => {
-                        return item.title && item.explanation;
-                    });
-
-                    if (validItems.length === 0) {
-                        alert('❌ 导入失败：文件中没有有效的知识点数据。');
-                        return;
-                    }
-
-                    // 为每个知识点生成新ID
-                    validItems.forEach(item => {
-                        item.id = generateId();
-                    });
-
-                    // 显示确认弹窗
-                    pendingImportData = validItems;
-                    showImportModal(validItems.length);
-                } catch (error) {
-                    alert('❌ 导入失败：' + error.message);
-                }
-            };
-            reader.readAsText(file);
-
-            // 清空文件输入，允许重复选择同一文件
-            event.target.value = '';
-        }
-
-        function showImportModal(count) {
-            document.getElementById('importMessage').innerHTML = 
-                `发现 <strong>${count}</strong> 个有效知识点`;
-            
-            const preview = document.getElementById('importPreview');
-            const previews = pendingImportData.slice(0, 5).map(item => 
-                `<div style="padding: 8px 0; border-bottom: 1px solid var(--border);">
-                    <strong>${escapeHtml(item.title)}</strong>
-                    <br><span style="color: var(--text-secondary);">${escapeHtml(item.explanation.substring(0, 50))}...</span>
-                </div>`
-            ).join('');
-            
-            preview.innerHTML = previews + (pendingImportData.length > 5 ? 
-                `<div style="color: var(--text-secondary); padding-top: 8px;">...还有 ${pendingImportData.length - 5} 个</div>` : '');
-
-            document.getElementById('importModalOverlay').classList.add('show');
-        }
-
-        function closeImportModal() {
-            document.getElementById('importModalOverlay').classList.remove('show');
-            pendingImportData = null;
-        }
-
-        function importWithMerge() {
-            if (!pendingImportData) return;
-            
-            // 合并数据（新数据添加到前面）
-            knowledgeList = [...pendingImportData, ...knowledgeList];
-            saveKnowledge();
-            renderCards();
-            closeImportModal();
-            alert(`✅ 成功导入 ${pendingImportData.length} 个知识点（已与现有数据合并）`);
-        }
-
-        function importWithReplace() {
-            if (!pendingImportData) return;
-            
-            const confirmed = confirm('⚠️ 确定要替换全部数据吗？此操作不可撤销。');
-            if (confirmed) {
-                knowledgeList = pendingImportData;
-                saveKnowledge();
-                renderCards();
-                closeImportModal();
-                alert(`✅ 成功导入 ${pendingImportData.length} 个知识点（已替换全部数据）`);
+        /* ========== 测验相关函数 ========== */
+        function updateQuizInfo() {
+            const count = knowledgeList.length;
+            document.getElementById('quizInfo').textContent = 
+                `题库共 ${count} 道题，准备好测试您的 C# 异步编程知识了吗？`;
+            document.getElementById('questionCount').max = count;
+            if (parseInt(document.getElementById('questionCount').value) > count) {
+                document.getElementById('questionCount').value = count;
             }
         }
 
-        /* ========== 导出功能 ========== */
-        function exportData() {
-            if (knowledgeList.length === 0) {
-                alert('❌ 没有可导出的数据');
+        function selectQuizType(type) {
+            selectedQuizType = type;
+            document.querySelectorAll('.quiz-type-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.type === type);
+            });
+        }
+
+        // ========== 生成测验题目 ==========
+        function generateQuestions() {
+            const count = parseInt(document.getElementById('questionCount').value) || 10;
+            const types = selectedQuizType === 'all' ? ['choice', 'judge', 'fill'] : [selectedQuizType];
+            
+            // 打乱顺序
+            const shuffled = [...knowledgeList].sort(() => Math.random() - 0.5);
+            const selected = shuffled.slice(0, Math.min(count, shuffled.length));
+
+            const questions = [];
+            selected.forEach((item, index) => {
+                const type = types[index % types.length];
+                if (type === 'choice') {
+                    questions.push(generateChoiceQuestion(item));
+                } else if (type === 'judge') {
+                    questions.push(generateJudgeQuestion(item));
+                } else if (type === 'fill') {
+                    questions.push(generateFillQuestion(item));
+                }
+            });
+
+            return questions;
+        }
+
+        // 生成选择题
+        function generateChoiceQuestion(item) {
+            const otherItems = knowledgeList.filter(k => k.id !== item.id);
+            const shuffledOthers = otherItems.sort(() => Math.random() - 0.5).slice(0, 3);
+
+            // 干扰项来源：其他知识点标题或代码片段
+            const distractors = shuffledOthers.map(k => {
+                return Math.random() > 0.5 ? k.title : (k.code ? extractCodeKeyword(k.code) : k.title);
+            });
+
+            // 正确答案
+            const correctAnswer = item.title;
+
+            // 生成选项
+            const options = shuffleArray([correctAnswer, ...distractors]);
+
+            return {
+                type: 'choice',
+                typeLabel: '选择题',
+                question: `以下哪个是关于 "${item.title}" 的正确描述？`,
+                options: options,
+                correctIndex: options.indexOf(correctAnswer),
+                knowledge: item
+            };
+        }
+
+        // 生成判断题
+        function generateJudgeQuestion(item) {
+            const isCorrect = Math.random() > 0.5;
+            let statement, correctAnswer;
+
+            if (isCorrect) {
+                // 正确陈述：直接使用知识点内容
+                statement = item.explanation.substring(0, 50) + (item.explanation.length > 50 ? '...' : '');
+                correctAnswer = true;
+            } else {
+                // 错误陈述：篡改关键词
+                const keywords = extractKeywords(item.explanation);
+                if (keywords.length > 0) {
+                    const wrongKeyword = getRandomWrongKeyword(keywords[0]);
+                    statement = item.explanation.replace(keywords[0], wrongKeyword).substring(0, 60) + '...';
+                } else {
+                    statement = item.explanation.substring(0, 55) + '... [错误版本]';
+                }
+                correctAnswer = false;
+            }
+
+            return {
+                type: 'judge',
+                typeLabel: '判断题',
+                question: `判断以下陈述是否正确：\n\n${statement}`,
+                options: ['正确', '错误'],
+                correctIndex: correctAnswer ? 0 : 1,
+                knowledge: item
+            };
+        }
+
+        // 生成代码填空题
+        function generateFillQuestion(item) {
+            if (!item.code) {
+                // 如果没有代码，改为选择题
+                return generateChoiceQuestion(item);
+            }
+
+            const keywords = extractCodeKeywords(item.code);
+            if (keywords.length === 0) {
+                return generateChoiceQuestion(item);
+            }
+
+            const targetKeyword = keywords[Math.floor(Math.random() * keywords.length)];
+            const blankedCode = item.code.replace(new RegExp(`\\b${targetKeyword}\\b`, 'g'), '___');
+            const wrongOptions = getWrongCodeOptions(targetKeyword);
+
+            const options = shuffleArray([targetKeyword, ...wrongOptions]);
+
+            return {
+                type: 'fill',
+                typeLabel: '代码填空',
+                question: `在以下代码中，空白处应该填入什么？\n\n${blankedCode}`,
+                options: options,
+                correctIndex: options.indexOf(targetKeyword),
+                knowledge: item
+            };
+        }
+
+        // 辅助函数：从代码中提取关键词
+        function extractCodeKeywords(code) {
+            const keywords = ['async', 'await', 'Task', 'var', 'return', 'public', 'private', 
+                            'static', 'new', 'using', 'try', 'catch', 'finally', 'throw',
+                            'foreach', 'Select', 'Where', 'OrderBy', 'GroupBy', 'Join',
+                            'ConfigureAwait', 'WhenAll', 'WhenAny', 'Delay', 'FromResult',
+                            'SemaphoreSlim', 'CancellationToken', 'ValueTask', 'yield',
+                            'IAsyncEnumerable', 'IEnumerable', 'async IAsyncEnumerable'];
+            return keywords.filter(k => code.includes(k));
+        }
+
+        function extractCodeKeyword(code) {
+            const lines = code.split('\n').filter(l => l.trim() && !l.trim().startsWith('//'));
+            if (lines.length === 0) return code.split(' ')[0];
+            return lines[0].trim().substring(0, 30);
+        }
+
+        function extractKeywords(text) {
+            return text.split(/\s+/).filter(w => w.length > 3 && /[\u4e00-\u9fa5a-zA-Z]/.test(w));
+        }
+
+        function getRandomWrongKeyword(correct) {
+            const wrongOptions = {
+                'async': ['await', 'sync', 'Task'],
+                'await': ['async', 'wait', 'Task'],
+                'Task': ['Thread', 'Process', 'Action'],
+                'var': ['let', 'const', 'dynamic'],
+                '委托': ['事件', '接口', '类'],
+                '泛型': ['继承', '多态', '封装'],
+                'LINQ': ['SQL', 'Lambda', '迭代器'],
+                'lock': ['synchronized', 'mutex', 'semaphore']
+            };
+            const options = wrongOptions[correct] || ['错误选项A', '错误选项B', '错误选项C'];
+            return options[Math.floor(Math.random() * options.length)];
+        }
+
+        function getWrongCodeOptions(correct) {
+            const allOptions = {
+                'async': ['sync', 'await', 'Task', 'void'],
+                'await': ['async', 'wait', '.Result', '.GetAwaiter()'],
+                'Task': ['Thread', 'Action', 'Func', 'void'],
+                'var': ['let', 'const', 'int', 'string'],
+                'return': ['throw', 'yield', 'break', 'continue'],
+                'using': ['import', 'include', 'require', 'with'],
+                'ConfigureAwait': ['ConfigureWait', 'ConfigureAsync', 'AwaitConfig', 'NoContext'],
+                'WhenAll': ['WhenAny', 'WaitAll', 'AllTasks', 'TaskAll'],
+                'yield': ['return', 'break', 'yield return', 'async yield'],
+                'IAsyncEnumerable': ['IEnumerable', 'IAsyncEnumerator', 'AsyncEnumerable', 'IAwaitable']
+            };
+            const options = allOptions[correct] || ['错误选项A', '错误选项B', '错误选项C'];
+            return options.slice(0, 3);
+        }
+
+        function shuffleArray(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        /* ========== 测验控制 ========== */
+        function startQuiz() {
+            if (knowledgeList.length < 4) {
+                alert('题库至少需要4道题目才能开始测验');
                 return;
             }
 
-            const exportData = knowledgeList.map(item => ({
-                title: item.title,
-                explanation: item.explanation,
-                code: item.code || '',
-                extension: item.extension || '',
-                difficulty: item.difficulty,
-                tags: item.tags
-            }));
+            quizQuestions = generateQuestions();
+            currentQuestionIndex = 0;
+            correctCount = 0;
+            wrongQuestions = [];
 
-            const jsonStr = JSON.stringify(exportData, null, 2);
-            const blob = new Blob([jsonStr], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `csharp-knowledge-${new Date().toISOString().slice(0,10)}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+            document.getElementById('quizSetup').classList.add('hidden');
+            document.getElementById('quizInProgress').classList.remove('hidden');
+            document.getElementById('quizResult').classList.add('hidden');
 
-            alert(`✅ 已导出 ${knowledgeList.length} 个知识点到文件`);
+            document.getElementById('totalQ').textContent = quizQuestions.length;
+            showQuestion();
         }
 
-        /* ========== 筛选功能 ========== */
+        function showQuestion() {
+            const q = quizQuestions[currentQuestionIndex];
+            const progress = ((currentQuestionIndex) / quizQuestions.length) * 100;
+
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('currentQ').textContent = currentQuestionIndex + 1;
+            document.getElementById('correctCount').textContent = correctCount;
+            document.getElementById('wrongCount').textContent = wrongQuestions.length;
+
+            // 题型标签
+            const typeEl = document.getElementById('questionType');
+            typeEl.textContent = q.typeLabel;
+            typeEl.className = 'question-type ' + q.type;
+
+            // 题目文本
+            document.getElementById('questionText').textContent = q.question;
+
+            // 选项
+            const optionsList = document.getElementById('optionsList');
+            const letters = ['A', 'B', 'C', 'D'];
+            optionsList.innerHTML = q.options.map((opt, i) => `
+                <div class="option-item" data-index="${i}" onclick="selectOption(${i})">
+                    <span class="option-letter">${letters[i]}</span>
+                    <span class="option-text">${escapeHtml(opt)}</span>
+                </div>
+            `).join('');
+
+            // 隐藏反馈区域
+            document.getElementById('answerFeedback').classList.add('hidden');
+        }
+
+        function selectOption(index) {
+            const q = quizQuestions[currentQuestionIndex];
+            const options = document.querySelectorAll('.option-item');
+
+            // 禁用所有选项
+            options.forEach(opt => opt.classList.add('disabled'));
+
+            // 显示正确/错误
+            const selected = options[index];
+            const isCorrect = index === q.correctIndex;
+
+            if (isCorrect) {
+                selected.classList.add('correct');
+                correctCount++;
+            } else {
+                selected.classList.add('incorrect');
+                options[q.correctIndex].classList.add('correct');
+                wrongQuestions.push(q);
+            }
+
+            document.getElementById('correctCount').textContent = correctCount;
+            document.getElementById('wrongCount').textContent = wrongQuestions.length;
+
+            // 显示反馈
+            showFeedback(isCorrect, q);
+        }
+
+        function showFeedback(isCorrect, q) {
+            const feedback = document.getElementById('answerFeedback');
+            const header = document.getElementById('feedbackHeader');
+            const content = document.getElementById('feedbackContent');
+
+            feedback.classList.remove('hidden', 'correct', 'incorrect');
+            feedback.classList.add(isCorrect ? 'correct' : 'incorrect');
+
+            header.className = 'feedback-header ' + (isCorrect ? 'correct' : 'incorrect');
+            header.innerHTML = isCorrect 
+                ? '✅ 回答正确！' 
+                : `❌ 回答错误（正确答案是：${escapeHtml(q.options[q.correctIndex])})`;
+
+            content.innerHTML = `
+                <div class="analysis-card">
+                    <h4>📖 ${escapeHtml(q.knowledge.title)}</h4>
+                    <p><strong>解释：</strong>${escapeHtml(q.knowledge.explanation)}</p>
+                    ${q.knowledge.code ? `<pre class="code-block">${escapeHtml(q.knowledge.code)}</pre>` : ''}
+                    ${q.knowledge.extension ? `<p style="margin-top:12px;"><strong>拓展：</strong>${escapeHtml(q.knowledge.extension)}</p>` : ''}
+                </div>
+            `;
+
+            // 更新下一题按钮
+            const nextBtn = document.getElementById('nextBtn');
+            nextBtn.textContent = currentQuestionIndex < quizQuestions.length - 1 ? '下一题 →' : '查看结果';
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < quizQuestions.length) {
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById('quizInProgress').classList.add('hidden');
+            document.getElementById('quizResult').classList.remove('hidden');
+
+            const percentage = Math.round((correctCount / quizQuestions.length) * 100);
+            document.getElementById('scoreNumber').textContent = percentage + '%';
+            document.getElementById('finalCorrect').textContent = correctCount;
+            document.getElementById('finalWrong').textContent = quizQuestions.length - correctCount;
+
+            // 设置表情和标题
+            const icon = document.getElementById('resultIcon');
+            const title = document.getElementById('resultTitle');
+            
+            if (percentage >= 90) {
+                icon.textContent = '🏆';
+                title.textContent = '太棒了！';
+            } else if (percentage >= 70) {
+                icon.textContent = '🎉';
+                title.textContent = '表现不错！';
+            } else if (percentage >= 50) {
+                icon.textContent = '💪';
+                title.textContent = '继续加油！';
+            } else {
+                icon.textContent = '📚';
+                title.textContent = '需要多多复习';
+            }
+
+            document.getElementById('resultSubtitle').textContent = 
+                `共 ${quizQuestions.length} 题，答对 ${correctCount} 题`;
+
+            // 显示错题列表
+            const wrongContainer = document.getElementById('wrongQuestions');
+            if (wrongQuestions.length > 0) {
+                wrongContainer.innerHTML = `
+                    <h3>📝 错题回顾 (${wrongQuestions.length} 题)</h3>
+                    ${wrongQuestions.map((q, i) => `
+                        <div class="wrong-question-item" onclick="this.classList.toggle('expanded')">
+                            <div class="wrong-question-header">
+                                <span class="wrong-question-title">${i + 1}. ${escapeHtml(q.knowledge.title)}</span>
+                            </div>
+                            <div class="wrong-question-answer">
+                                正确答案是：${escapeHtml(q.options[q.correctIndex])}
+                            </div>
+                        </div>
+                    `).join('')}
+                `;
+            } else {
+                wrongContainer.innerHTML = '<p style="color: var(--success); font-weight: 600;">🎊 太棒了！全部答对！</p>';
+            }
+        }
+
+        function restartQuiz() {
+            resetQuiz();
+            startQuiz();
+        }
+
+        function resetQuiz() {
+            document.getElementById('quizSetup').classList.remove('hidden');
+            document.getElementById('quizInProgress').classList.add('hidden');
+            document.getElementById('quizResult').classList.add('hidden');
+            quizQuestions = [];
+            currentQuestionIndex = 0;
+            correctCount = 0;
+            wrongQuestions = [];
+        }
+
+        /* ========== 复习模式函数 ========== */
         function setDifficultyFilter(difficulty) {
             currentDifficulty = difficulty;
             document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -1116,26 +1336,17 @@ void Print<T>(T value) where T : struct {
         }
 
         function matchesFilter(item) {
-            // 难度筛选
-            if (currentDifficulty !== 'all' && item.difficulty !== currentDifficulty) {
-                return false;
-            }
-            
-            // 搜索筛选
+            if (currentDifficulty !== 'all' && item.difficulty !== currentDifficulty) return false;
             if (searchTerm) {
-                const titleMatch = item.title.toLowerCase().includes(searchTerm);
-                const explanationMatch = item.explanation.toLowerCase().includes(searchTerm);
-                return titleMatch || explanationMatch;
+                return item.title.toLowerCase().includes(searchTerm) || 
+                       item.explanation.toLowerCase().includes(searchTerm);
             }
-            
             return true;
         }
 
-        /* ========== 渲染卡片 ========== */
         function renderCards() {
             const grid = document.getElementById('cardsGrid');
             const emptyState = document.getElementById('emptyState');
-            
             const filtered = knowledgeList.filter(matchesFilter);
             
             if (filtered.length === 0) {
@@ -1149,21 +1360,14 @@ void Print<T>(T value) where T : struct {
         }
 
         function createCardHTML(item) {
-            const difficultyLabels = {
-                beginner: '初级',
-                intermediate: '中级',
-                advanced: '高级'
-            };
-            
+            const difficultyLabels = { beginner: '初级', intermediate: '中级', advanced: '高级' };
             const tagsHTML = item.tags.map(tag => `<span class="tag">${tag}</span>`).join('');
             
             return `
                 <article class="card" data-id="${item.id}" onclick="toggleCard('${item.id}')">
                     <div class="card-header">
                         <h3 class="card-title">${escapeHtml(item.title)}</h3>
-                        <span class="card-difficulty difficulty-${item.difficulty}">
-                            ${difficultyLabels[item.difficulty]}
-                        </span>
+                        <span class="card-difficulty difficulty-${item.difficulty}">${difficultyLabels[item.difficulty]}</span>
                     </div>
                     <div class="card-tags">${tagsHTML}</div>
                     <p class="card-preview">${escapeHtml(item.explanation)}</p>
@@ -1173,21 +1377,16 @@ void Print<T>(T value) where T : struct {
                             <div class="detail-label">📖 解释</div>
                             <div class="detail-content">${escapeHtml(item.explanation)}</div>
                         </div>
-                        
                         ${item.code ? `
                         <div class="detail-section">
                             <div class="detail-label">💻 代码示例</div>
                             <pre class="code-block">${escapeHtml(item.code)}</pre>
-                        </div>
-                        ` : ''}
-                        
+                        </div>` : ''}
                         ${item.extension ? `
                         <div class="detail-section">
                             <div class="detail-label">🚀 拓展</div>
                             <div class="detail-content">${escapeHtml(item.extension)}</div>
-                        </div>
-                        ` : ''}
-                        
+                        </div>` : ''}
                         <div class="card-actions" onclick="event.stopPropagation()">
                             <button class="card-btn edit" onclick="editItem('${item.id}')">✏️ 编辑</button>
                             <button class="card-btn delete" onclick="deleteItem('${item.id}')">🗑️ 删除</button>
@@ -1211,7 +1410,6 @@ void Print<T>(T value) where T : struct {
         /* ========== 模态弹窗 ========== */
         function openModal(id = null) {
             editingId = id;
-            const overlay = document.getElementById('modalOverlay');
             const title = document.getElementById('modalTitle');
             
             if (id) {
@@ -1230,29 +1428,24 @@ void Print<T>(T value) where T : struct {
                 document.getElementById('knowledgeForm').reset();
             }
             
-            overlay.classList.add('show');
+            document.getElementById('modalOverlay').classList.add('show');
             document.getElementById('titleInput').focus();
         }
 
         function closeModal() {
-            const overlay = document.getElementById('modalOverlay');
-            overlay.classList.remove('show');
+            document.getElementById('modalOverlay').classList.remove('show');
             editingId = null;
             clearErrors();
         }
 
         function handleOverlayClick(event) {
-            if (event.target === event.currentTarget) {
-                closeModal();
-            }
+            if (event.target === event.currentTarget) closeModal();
         }
 
         function clearErrors() {
             document.getElementById('titleError').textContent = '';
             document.getElementById('explanationError').textContent = '';
-            document.querySelectorAll('.form-input, .form-textarea').forEach(el => {
-                el.classList.remove('error');
-            });
+            document.querySelectorAll('.form-input, .form-textarea').forEach(el => el.classList.remove('error'));
         }
 
         /* ========== 表单提交 ========== */
@@ -1267,43 +1460,26 @@ void Print<T>(T value) where T : struct {
             const difficulty = document.getElementById('difficultyInput').value;
             const tagsInput = document.getElementById('tagsInput').value.trim();
             
-            // 验证
             let hasError = false;
-            
             if (!title) {
                 document.getElementById('titleError').textContent = '题目不能为空';
                 document.getElementById('titleInput').classList.add('error');
                 hasError = true;
             }
-            
             if (!explanation) {
                 document.getElementById('explanationError').textContent = '解释不能为空';
                 document.getElementById('explanationInput').classList.add('error');
                 hasError = true;
             }
-            
             if (hasError) return;
             
-            // 处理标签
-            const tags = tagsInput 
-                ? tagsInput.split(/[,，]/).map(t => t.trim()).filter(t => t)
-                : [];
+            const tags = tagsInput ? tagsInput.split(/[,，]/).map(t => t.trim()).filter(t => t) : [];
             
-            const item = {
-                id: editingId || generateId(),
-                title,
-                explanation,
-                code,
-                extension,
-                difficulty,
-                tags
-            };
+            const item = { id: editingId || generateId(), title, explanation, code, extension, difficulty, tags };
             
             if (editingId) {
                 const index = knowledgeList.findIndex(k => k.id === editingId);
-                if (index !== -1) {
-                    knowledgeList[index] = item;
-                }
+                if (index !== -1) knowledgeList[index] = item;
             } else {
                 knowledgeList.unshift(item);
             }
@@ -1314,17 +1490,12 @@ void Print<T>(T value) where T : struct {
         }
 
         /* ========== 编辑和删除 ========== */
-        function editItem(id) {
-            openModal(id);
-        }
+        function editItem(id) { openModal(id); }
 
         function deleteItem(id) {
             const item = knowledgeList.find(k => k.id === id);
             if (!item) return;
-            
-            const confirmed = confirm(`确定要删除知识点"${item.title}"吗？此操作不可撤销。`);
-            
-            if (confirmed) {
+            if (confirm(`确定要删除知识点"${item.title}"吗？`)) {
                 knowledgeList = knowledgeList.filter(k => k.id !== id);
                 saveKnowledge();
                 renderCards();
@@ -1333,14 +1504,10 @@ void Print<T>(T value) where T : struct {
 
         /* ========== 重置数据 ========== */
         function resetData() {
-            const confirmed = confirm('确定要重置为默认数据吗？当前所有数据将被覆盖。');
-            
-            if (confirmed) {
+            if (confirm('确定要重置为默认数据吗？当前所有数据将被覆盖。')) {
                 knowledgeList = JSON.parse(JSON.stringify(DEFAULT_KNOWLEDGE));
                 saveKnowledge();
                 renderCards();
-                
-                // 重置筛选器
                 currentDifficulty = 'all';
                 searchTerm = '';
                 document.getElementById('searchInput').value = '';
@@ -1357,31 +1524,115 @@ void Print<T>(T value) where T : struct {
             const beginner = knowledgeList.filter(k => k.difficulty === 'beginner').length;
             const intermediate = knowledgeList.filter(k => k.difficulty === 'intermediate').length;
             const advanced = knowledgeList.filter(k => k.difficulty === 'advanced').length;
-            
             stats.textContent = `总计 ${total} 个知识点 | 初级 ${beginner} | 中级 ${intermediate} | 高级 ${advanced}`;
         }
 
-        // 初始化统计
         updateStats();
+
+        /* ========== 导入功能 ========== */
+        let pendingImportData = null;
+
+        function handleImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (!Array.isArray(data)) {
+                        alert('❌ 导入失败：文件格式不正确');
+                        return;
+                    }
+
+                    const validItems = data.filter(item => item.title && item.explanation);
+                    if (validItems.length === 0) {
+                        alert('❌ 导入失败：文件中没有有效的知识点');
+                        return;
+                    }
+
+                    validItems.forEach(item => { item.id = generateId(); });
+                    pendingImportData = validItems;
+                    showImportModal(validItems.length);
+                } catch (error) {
+                    alert('❌ 导入失败：' + error.message);
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        function showImportModal(count) {
+            document.getElementById('importMessage').innerHTML = `发现 <strong>${count}</strong> 个有效知识点`;
+            const preview = document.getElementById('importPreview');
+            preview.innerHTML = pendingImportData.slice(0, 5).map(item => 
+                `<div style="padding: 8px 0; border-bottom: 1px solid var(--border);">
+                    <strong>${escapeHtml(item.title)}</strong>
+                </div>`
+            ).join('');
+            document.getElementById('importModalOverlay').classList.add('show');
+        }
+
+        function closeImportModal() {
+            document.getElementById('importModalOverlay').classList.remove('show');
+            pendingImportData = null;
+        }
+
+        function importWithMerge() {
+            if (!pendingImportData) return;
+            knowledgeList = [...pendingImportData, ...knowledgeList];
+            saveKnowledge();
+            renderCards();
+            closeImportModal();
+            alert(`✅ 成功导入 ${pendingImportData.length} 个知识点`);
+        }
+
+        function importWithReplace() {
+            if (!pendingImportData) return;
+            if (confirm('⚠️ 确定要替换全部数据吗？')) {
+                knowledgeList = pendingImportData;
+                saveKnowledge();
+                renderCards();
+                closeImportModal();
+                alert(`✅ 成功导入 ${pendingImportData.length} 个知识点`);
+            }
+        }
+
+        /* ========== 导出功能 ========== */
+        function exportData() {
+            if (knowledgeList.length === 0) {
+                alert('❌ 没有可导出的数据');
+                return;
+            }
+
+            const exportData = knowledgeList.map(item => ({
+                title: item.title,
+                explanation: item.explanation,
+                code: item.code || '',
+                extension: item.extension || '',
+                difficulty: item.difficulty,
+                tags: item.tags
+            }));
+
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `csharp-knowledge-${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            alert(`✅ 已导出 ${knowledgeList.length} 个知识点`);
+        }
 
         /* ========== 键盘快捷键 ========== */
         document.addEventListener('keydown', (e) => {
-            // ESC 关闭模态框
             if (e.key === 'Escape') {
                 closeModal();
                 closeImportModal();
             }
-            
-            // Ctrl+N 新建
             if (e.ctrlKey && e.key === 'n') {
                 e.preventDefault();
-                openModal();
-            }
-            
-            // Ctrl+F 聚焦搜索
-            if (e.ctrlKey && e.key === 'f') {
-                e.preventDefault();
-                document.getElementById('searchInput').focus();
+                if (currentMode === 'review') openModal();
             }
         });
     </script>
