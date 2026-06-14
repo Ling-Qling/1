@@ -1,0 +1,44 @@
+{
+  "name": "Claude Dev Container",
+  "image": "mcr.microsoft.com/vscode/devcontainers/python:3.11",
+  "context": "..",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+  "workspaceFolder": "/workspace",
+  "mounts": [
+    {
+      "source": "${localWorkspaceFolder}/.devcontainer/.bashrc",
+      "target": "/home/vscode/.bashrc",
+      "type": "bind"
+    },
+    {
+      "source": "vscode-extensions",
+      "target": "/root/.vscode-server/extensions",
+      "type": "volume"
+    }
+  ],
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "python.pythonPath": "/usr/local/bin/python",
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "editor.tabSize": 4,
+        "editor.insertSpaces": true
+      },
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode"
+      ]
+    }
+  },
+  "remoteUser": "vscode",
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/node:1": {
+      "nodeGypDependencies": true,
+      "version": "lts"
+    }
+  }
+}

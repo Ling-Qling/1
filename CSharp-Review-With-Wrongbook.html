@@ -297,9 +297,9 @@ let knowledgeList=[],currentDifficulty='all',searchTerm='',editingId=null,curren
 let quizQuestions=[],currentQuestionIndex=0,correctCount=0,wrongQuestions=[];
 let wrongbookData={};
 
-document.addEventListener('DOMContentLoaded',()=>{loadTheme();loadKnowledge();loadWrongbook();switchMode('review');updateQuizInfo();updateWrongbookStats()});
+document.addEventListener('DOMContentLoaded',()=>{loadTheme();loadKnowledge();loadWrongbook();renderCards();updateQuizInfo();updateWrongbookStats()});
 
-function switchMode(mode){currentMode=mode;document.querySelectorAll('.mode-btn').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));document.getElementById('reviewMode').classList.toggle('hidden',mode!=='review');document.getElementById('quizMode').classList.toggle('hidden',mode!=='quiz');document.getElementById('wrongbookMode').classList.toggle('hidden',mode!=='wrongbook');if(mode==='wrongbook')renderWrongbook();else if(mode==='quiz')resetQuiz();else if(mode==='review')renderCards()}
+function switchMode(mode){currentMode=mode;document.querySelectorAll('.mode-btn').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));['reviewMode','quizMode','wrongbookMode'].forEach(id=>document.getElementById(id).classList.toggle('hidden',!id.includes(mode.charAt(0).toUpperCase()+mode.slice(1))&&id!=='reviewMode'&&id!=='quizMode'&&id!=='wrongbookMode'));if(mode==='wrongbook')renderWrongbook();else if(mode==='quiz')resetQuiz()}
 
 function generateId(){return Date.now().toString(36)+Math.random().toString(36).substr(2)}
 

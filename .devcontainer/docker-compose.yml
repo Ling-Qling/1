@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  claude-dev:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    volumes:
+      - ..:/workspace:cached
+      - vscode-extensions:/root/.vscode-server/extensions
+    environment:
+      - PYTHONPATH=/workspace
+      - TERM=xterm-256color
+    command: sleep infinity
+    network_mode: bridge
+
+volumes:
+  vscode-extensions:
