@@ -23,6 +23,15 @@
         .io-buttons{display:flex;gap:6px}
         .io-btn{padding:6px 12px;border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:.85rem;font-weight:500;transition:.2s;background:var(--bg-primary);color:var(--text-secondary);display:flex;align-items:center;gap:4px}
         .io-btn:hover{border-color:var(--accent);color:var(--accent)}
+        /* 云同步面板 */
+        .sync-panel{background:var(--bg-primary);border:1px solid var(--border);border-radius:8px;padding:16px;margin-top:12px;animation:fadeIn .3s}
+        .sync-panel .form-label{font-size:.85rem;margin-bottom:4px}
+        .sync-panel .form-input{font-size:.85rem;padding:8px 12px}
+        .sync-panel .form-hint{font-size:.75rem;margin-top:2px}
+        #syncStatusBtn.synced{color:var(--success);border-color:var(--success)}
+        #syncStatusBtn.syncing{color:var(--accent);animation:pulse .8s infinite}
+        #syncStatusBtn.error{color:var(--danger);border-color:var(--danger)}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
         /* 修复4：主题切换按钮样式 */
         .theme-toggle{background:var(--bg-primary);color:var(--text-primary);border:1px solid var(--border);padding:8px 12px;border-radius:8px;cursor:pointer;font-size:1.1rem;transition:.2s;line-height:1}
         .theme-toggle:hover{background:var(--bg-secondary);transform:translateY(-1px)}
@@ -218,11 +227,32 @@
                     <span style="font-weight:600;color:var(--accent)">📖 知识点列表</span>
                     <div style="display:flex;gap:8px;flex-wrap:wrap">
                         <div class="io-buttons">
+                            <button class="io-btn" onclick="toggleSyncPanel()" title="云端同步" id="syncStatusBtn">☁️</button>
                             <button class="io-btn" onclick="exportKnowledge()" title="导出为 JSON 文件">📤 导出</button>
                             <button class="io-btn" onclick="document.getElementById('importFile').click()" title="从 JSON 文件导入">📥 导入</button>
                         </div>
                         <button class="nav-btn success" onclick="openModal()">➕ 添加知识点</button>
                     </div>
+                </div>
+                <!-- 云端同步设置面板 -->
+                <div id="syncPanel" class="sync-panel hidden">
+                    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+                        <div style="flex:1;min-width:200px">
+                            <label class="form-label" style="font-size:.85rem">GitHub Token <a href="https://github.com/settings/tokens" target="_blank" style="color:var(--accent);font-size:.75rem">(获取→)</a></label>
+                            <input type="password" class="form-input" id="syncToken" placeholder="ghp_xxxxxxxxxxxx" style="font-size:.85rem;padding:8px 12px">
+                            <div class="form-hint">需要 gist 权限，Token 仅保存在你的浏览器中</div>
+                        </div>
+                        <div style="flex:1;min-width:150px">
+                            <label class="form-label" style="font-size:.85rem">Gist ID（自动创建可留空）</label>
+                            <input type="text" class="form-input" id="syncGistId" placeholder="自动生成" style="font-size:.85rem;padding:8px 12px" readonly>
+                        </div>
+                        <div style="display:flex;gap:6px">
+                            <button class="nav-btn" onclick="saveSyncConfig()" style="font-size:.85rem;padding:8px 16px">💾 保存设置</button>
+                            <button class="nav-btn secondary" onclick="syncNow()" id="syncNowBtn" style="font-size:.85rem;padding:8px 16px">🔄 立即同步</button>
+                            <button class="nav-btn danger" onclick="disconnectSync()" style="font-size:.85rem;padding:8px 16px">断开</button>
+                        </div>
+                    </div>
+                    <div id="syncStatus" style="margin-top:8px;font-size:.85rem;color:var(--text-secondary)"></div>
                 </div>
                 <input type="file" id="importFile" accept=".json" style="display:none" onchange="importKnowledge(event)">
                 <input type="text" class="search-box" id="searchInput" placeholder="🔍 搜索知识点..." oninput="filterCards()">
@@ -329,14 +359,17 @@
     /* 修复3：防重复点击标记 */
     let questionAnswered=false;
 
-    document.addEventListener('DOMContentLoaded',()=>{
+    document.addEventListener('DOMContentLoaded',async()=>{
         loadTheme();
+        loadSyncConfig();
         loadKnowledge();
         loadWrongbook();
         switchMode('review');
         updateQuizInfo();
         updateWrongbookStats();
-        updateThemeIcon(); // 修复5：初始化主题图标
+        updateThemeIcon();
+        /* 后台静默从云端拉取最新数据 */
+        autoSyncFromCloud();
     });
 
     /* ========== 主题切换 ========== */
@@ -375,7 +408,21 @@
     function shuffleArray(a){const arr=[...a];for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]]}return arr}
 
     /* ========== 数据持久化（含版本自动合并） ========== */
-    function saveKnowledge(){localStorage.setItem('csharp-knowledge',JSON.stringify(knowledgeList));localStorage.setItem('csharp-data-version',DATA_VERSION);updateStats();updateQuizInfo();if(currentMode==='review')renderCards()}
+    function saveKnowledge(){localStorage.setItem('csharp-knowledge',JSON.stringify(knowledgeList));localStorage.setItem('csharp-data-version',DATA_VERSION);updateStats();updateQuizInfo();if(currentMode==='review')renderCards();/* 后台推送到云端 */pushToCloud()}
+    /* 后台静默推送到 Gist */
+    let _pushTimer=null;
+    function pushToCloud(){
+        if(!syncConfig.token||!syncConfig.gistId)return;
+        clearTimeout(_pushTimer);
+        _pushTimer=setTimeout(async()=>{
+            try{
+                await githubAPI('PATCH','/gists/'+syncConfig.gistId,{
+                    files:{'knowledge.json':{content:JSON.stringify(knowledgeList)}}
+                });
+                updateSyncStatusBtn(true);
+            }catch(e){/* 静默失败 */}
+        },2000); /* 2秒防抖，避免频繁请求 */
+    }
     function loadKnowledge(){
         const s=localStorage.getItem('csharp-knowledge');
         const storedVer=parseInt(localStorage.getItem('csharp-data-version'))||0;
@@ -658,6 +705,133 @@
         cleanupWrongbookOnDelete(id);
         knowledgeList=knowledgeList.filter(k=>k.id!==id);
         saveKnowledge();renderCards();
+    }
+
+    /* ========== 云端同步（GitHub Gist） ========== */
+    let syncConfig={token:'',gistId:''};
+    function loadSyncConfig(){
+        const s=localStorage.getItem('csharp-sync-config');
+        if(s)try{syncConfig=JSON.parse(s)}catch(e){}
+        document.getElementById('syncToken').value=syncConfig.token||'';
+        document.getElementById('syncGistId').value=syncConfig.gistId||'';
+        updateSyncStatus();
+    }
+    function saveSyncConfig(){
+        syncConfig.token=document.getElementById('syncToken').value.trim();
+        syncConfig.gistId=document.getElementById('syncGistId').value.trim();
+        localStorage.setItem('csharp-sync-config',JSON.stringify(syncConfig));
+        updateSyncStatus();
+        alert('✅ 设置已保存。点击"立即同步"将数据上传到云端。');
+    }
+    function disconnectSync(){
+        if(!confirm('断开云端同步？本地数据不会丢失。'))return;
+        syncConfig={token:'',gistId:''};
+        localStorage.removeItem('csharp-sync-config');
+        document.getElementById('syncToken').value='';
+        document.getElementById('syncGistId').value='';
+        updateSyncStatus();
+        alert('已断开云端同步');
+    }
+    function toggleSyncPanel(){
+        const panel=document.getElementById('syncPanel');
+        panel.classList.toggle('hidden');
+        if(!panel.classList.contains('hidden'))loadSyncConfig();
+    }
+    function updateSyncStatus(msg,type){
+        const btn=document.getElementById('syncStatusBtn');
+        const status=document.getElementById('syncStatus');
+        btn.className='io-btn';
+        if(syncConfig.token&&syncConfig.gistId){btn.classList.add('synced');btn.title='已配置云端同步'}else if(syncConfig.token){btn.title='已设置Token，点击立即同步创建Gist'}else{btn.title='点击配置云端同步'}
+        if(msg)status.innerHTML=msg;
+        if(type)status.style.color=type==='error'?'var(--danger)':type==='success'?'var(--success)':'var(--text-secondary)';
+    }
+    async function syncNow(){
+        if(!syncConfig.token){alert('请先填写 GitHub Token\n\n获取地址：https://github.com/settings/tokens\n权限勾选：gist');return}
+        const btn=document.getElementById('syncNowBtn');
+        btn.disabled=true;btn.textContent='⏳ 同步中...';
+        updateSyncStatus('⏳ 正在同步...','');
+        try{
+            /* 如果没有 gistId，先创建一个 */
+            if(!syncConfig.gistId){
+                const gist=await githubAPI('POST','/gists',{
+                    description:'CSharp-Review 知识点同步数据',
+                    public:false,
+                    files:{'knowledge.json':{content:JSON.stringify(knowledgeList)}}
+                });
+                syncConfig.gistId=gist.id;
+                document.getElementById('syncGistId').value=gist.id;
+                localStorage.setItem('csharp-sync-config',JSON.stringify(syncConfig));
+                updateSyncStatus('✅ 云端 Gist 已创建并上传成功！','success');
+            }else{
+                /* 先拉取云端数据 */
+                const gist=await githubAPI('GET','/gists/'+syncConfig.gistId);
+                const file=gist.files['knowledge.json'];
+                if(file&&file.content){
+                    const cloudData=JSON.parse(file.content);
+                    /* 合并策略：云端为主，本地新条目追加到云端 */
+                    const cloudTitles=new Set(cloudData.map(k=>k.title));
+                    const localNew=knowledgeList.filter(k=>!cloudTitles.has(k.title));
+                    const merged=[...cloudData,...localNew.map(item=>({...item,id:generateId()}))];
+                    /* 推回云端 */
+                    await githubAPI('PATCH','/gists/'+syncConfig.gistId,{
+                        files:{'knowledge.json':{content:JSON.stringify(merged)}}
+                    });
+                    knowledgeList=merged;
+                    saveKnowledge();
+                    renderCards();
+                    updateSyncStatus(`✅ 同步完成！云端${cloudData.length}条 + 本地新增${localNew.length}条 = 合并${merged.length}条`,'success');
+                }else{
+                    /* 云端Gist存在但没有文件，上传本地数据 */
+                    await githubAPI('PATCH','/gists/'+syncConfig.gistId,{
+                        files:{'knowledge.json':{content:JSON.stringify(knowledgeList)}}
+                    });
+                    updateSyncStatus('✅ 已上传到云端！共'+knowledgeList.length+'条','success');
+                }
+            }
+            updateSyncStatusBtn(true);
+        }catch(err){
+            updateSyncStatus('❌ 同步失败：'+err.message,'error');
+            updateSyncStatusBtn(false);
+        }
+        btn.disabled=false;btn.textContent='🔄 立即同步';
+    }
+    function updateSyncStatusBtn(ok){
+        const btn=document.getElementById('syncStatusBtn');
+        btn.className='io-btn';
+        if(ok)btn.classList.add('synced');
+        else btn.classList.add('error');
+    }
+    async function githubAPI(method,path,body){
+        const res=await fetch('https://api.github.com'+path,{
+            method,
+            headers:{'Authorization':'token '+syncConfig.token,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
+            body:body?JSON.stringify(body):undefined
+        });
+        if(!res.ok){
+            const err=await res.json().catch(()=>({}));
+            throw new Error(err.message||`HTTP ${res.status}`);
+        }
+        if(res.status===204)return{};
+        return res.json();
+    }
+    /* 页面加载时自动从云端拉取 */
+    async function autoSyncFromCloud(){
+        if(!syncConfig.token||!syncConfig.gistId)return;
+        try{
+            const gist=await githubAPI('GET','/gists/'+syncConfig.gistId);
+            const file=gist.files['knowledge.json'];
+            if(file&&file.content){
+                const cloudData=JSON.parse(file.content);
+                /* 如果云端数据条数 >= 本地，用云端 */
+                if(cloudData.length>=knowledgeList.length){
+                    knowledgeList=cloudData;
+                    saveKnowledge();
+                    renderCards();
+                    updateSyncStatusBtn(true);
+                    console.log('☁️ 已从云端加载'+cloudData.length+'条知识点');
+                }
+            }
+        }catch(e){/* 静默失败，使用本地数据 */}
     }
 
     /* ========== 测验模式 ========== */
